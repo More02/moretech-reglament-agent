@@ -1,0 +1,12 @@
+id: expert-reply-classify
+entry: expert_reply_classify.skill:ExpertReplyClassify
+name: Разбор письма эксперта
+version: 1.0.0
+summary: Определяет, что прислал эксперт службы качества в переписке по обращению - финальный ответ, вопрос сотруднику, пересылку владельцу процесса или подтверждение получения; выделяет текст ответа без приветствий, подписей и цитирования; права отправителя и метки «#ответ», «#черновик» проверяет код
+tags: [почта, служба качества]
+data_class: personal
+models: [qwen3.6-35b-a3b]
+timeout_seconds: 20
+verify: {mode: code}
+cost_estimate: {input_tokens: 2000, output_tokens: 300}
+stability: beta

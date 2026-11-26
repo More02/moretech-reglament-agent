@@ -1,0 +1,12 @@
+id: clarification-extract
+entry: clarification_extract.skill:ClarificationExtract
+name: Разъяснение службы качества из переписки
+version: 1.0.0
+summary: Из вопроса сотрудника, уточнений и финального ответа эксперта делает запись базы знаний - обобщённый вопрос, ответ словами эксперта, подразделения и связанные пункты регламентов; ответ обязан дословно опираться на письмо, пункты и подразделения - только из переданных (проверяет код)
+tags: [база знаний, служба качества]
+data_class: personal
+models: [qwen3.6-35b-a3b]
+timeout_seconds: 20
+verify: {mode: code}
+cost_estimate: {input_tokens: 2500, output_tokens: 350}
+stability: beta
