@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+node_modules/
+web/dist/
+# Регламенты заказчика в репозиторий не кладём: они монтируются отдельным томом (data/regulations)
+data/
+!data/.gitkeep
+models_cache/
+evals/reports/*.json
+.DS_Store
