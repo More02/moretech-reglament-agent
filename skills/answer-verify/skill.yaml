@@ -1,0 +1,12 @@
+id: answer-verify
+entry: answer_verify.skill:AnswerVerify
+name: Независимая проверка ответа
+version: 1.0.0
+summary: Вторая модель проверяет, что каждое утверждение ответа следует из текста источника без искажения смысла (условия, исключения, роли); вердикт по каждому утверждению, выдуманные идентификаторы отбрасывает код. Используется в строгом режиме и в эвалах
+tags: [проверка, регламенты]
+data_class: company
+models: [qwen3.6-35b-a3b]
+timeout_seconds: 20
+verify: {mode: code}
+cost_estimate: {input_tokens: 2500, output_tokens: 200}
+stability: beta

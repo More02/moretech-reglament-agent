@@ -50,6 +50,7 @@ packages = [
     "sdk/src/skill_sdk",
     "skills/query-understand/src/query_understand",
     "skills/answer-compose/src/answer_compose",
+    "skills/answer-verify/src/answer_verify",
     "skills/expert-reply-classify/src/expert_reply_classify",
     "skills/clarification-extract/src/clarification_extract",
     "skills/gap-cluster/src/gap_cluster",
@@ -60,7 +61,7 @@ line-length = 120
 target-version = "py312"
 src = [
     "src", "sdk/src", "libs/reg_parse/src", "libs/evidence/src", "libs/ru_text/src", "libs/pii_guard/src",
-    "skills/query-understand/src", "skills/answer-compose/src", "skills/expert-reply-classify/src",
+    "skills/query-understand/src", "skills/answer-compose/src", "skills/answer-verify/src", "skills/expert-reply-classify/src",
     "skills/clarification-extract/src", "skills/gap-cluster/src",
 ]
 
@@ -81,7 +82,7 @@ max-complexity = 10
 python_version = "3.12"
 strict = true
 warn_unused_ignores = true
-mypy_path = "src:sdk/src:libs/reg_parse/src:libs/evidence/src:libs/ru_text/src:libs/pii_guard/src:skills/query-understand/src:skills/answer-compose/src:skills/expert-reply-classify/src:skills/clarification-extract/src:skills/gap-cluster/src"
+mypy_path = "src:sdk/src:libs/reg_parse/src:libs/evidence/src:libs/ru_text/src:libs/pii_guard/src:skills/query-understand/src:skills/answer-compose/src:skills/answer-verify/src:skills/expert-reply-classify/src:skills/clarification-extract/src:skills/gap-cluster/src"
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
@@ -93,7 +94,7 @@ addopts = "-q"
 testpaths = ["tests", "libs", "skills", "sdk"]
 pythonpath = [
     "src", "sdk/src", "libs/reg_parse/src", "libs/evidence/src", "libs/ru_text/src", "libs/pii_guard/src",
-    "skills/query-understand/src", "skills/answer-compose/src", "skills/expert-reply-classify/src",
+    "skills/query-understand/src", "skills/answer-compose/src", "skills/answer-verify/src", "skills/expert-reply-classify/src",
     "skills/clarification-extract/src", "skills/gap-cluster/src",
 ]
 asyncio_mode = "auto"
