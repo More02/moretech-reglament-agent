@@ -18,9 +18,9 @@ dialog:
 
 # Профили для демонстрации (имитация корпоративного входа; в эксплуатации - из SSO)
 demo_profiles:
-  - {name: Анна Смирнова, email: employee@example.ru, position: Руководитель проекта, department: dbrct}
-  - {name: Игорь Ковалёв, email: employee@example.ru, position: Пресейл-архитектор, department: ib}
-  - {name: Мария Орлова, email: employee@example.ru, position: Аккаунт-менеджер, department: null}
+  - {name: Анна Смирнова, email: main@more-tech.ru, position: Руководитель проекта, department: dbrct}
+  - {name: Игорь Ковалёв, email: main@more-tech.ru, position: Пресейл-архитектор, department: ib}
+  - {name: Мария Орлова, email: main@more-tech.ru, position: Аккаунт-менеджер, department: null}
 
 # Подразделения (фасет department). aliases - как их называют сотрудники.
 departments:
