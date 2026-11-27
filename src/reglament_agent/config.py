@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # Хранилище
     database_url: str = f"sqlite:///{ROOT / 'data' / 'reglament.db'}"
+    db_auto_create: bool = Field(default=True, description="Создавать таблицы без миграций (разработка, тесты)")
 
     # Почта
     mail_backend: str = Field(default="memory", description="memory | imap")

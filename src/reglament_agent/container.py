@@ -60,7 +60,8 @@ class Container:
 def build_container(settings: Settings, *, mail_transport: MailTransport | None = None) -> Container:
     passport = Passport.load(settings.passport_path)
     engine = make_engine(settings.database_url)
-    Base.metadata.create_all(engine)
+    if settings.db_auto_create:
+        Base.metadata.create_all(engine)
     sessions = make_session_factory(engine)
     ledger = UsageLedger(sessions)
 

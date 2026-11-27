@@ -1,0 +1,9 @@
+{$DOMAIN} {
+	encode gzip
+	header {
+		X-Robots-Tag "noindex, nofollow"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+	reverse_proxy app:8000
+}

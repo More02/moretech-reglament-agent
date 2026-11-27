@@ -1,0 +1,76 @@
+# Запуск: cp .env.example .env && заполнить; docker compose -f deploy/docker-compose.yml up -d --build
+# Локальная модель вместо облачного API: docker compose -f deploy/docker-compose.yml --profile local-llm up -d
+#   и в .env: LLM_BASE_URL=http://vllm:8000/v1, LLM_MODEL=Qwen/Qwen3.6-35B-A3B
+name: reglament-agent
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://reglament:${POSTGRES_PASSWORD:-reglament}@db:5432/reglament
+      DB_AUTO_CREATE: "false"
+      REGULATIONS_DIR: /app/data/regulations
+    volumes:
+      # Регламенты заказчика - отдельный том только для чтения, в образ и репозиторий не попадают
+      - ../data/regulations:/app/data/regulations:ro
+      - models:/models
+      - eval-reports:/app/evals/reports
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: reglament
+      POSTGRES_USER: reglament
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reglament}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reglament"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  # Внутренний контур: та же открытая модель на своём GPU (нужна карта от 24-48 ГБ и nvidia-container-toolkit)
+  vllm:
+    profiles: ["local-llm"]
+    image: vllm/vllm-openai:latest
+    command: >
+      --model Qwen/Qwen3.6-35B-A3B --served-model-name qwen3.6-35b-a3b
+      --max-model-len 32768 --gpu-memory-utilization 0.9 --enable-prefix-caching
+    volumes:
+      - models:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  models:
+  caddy-data:
+  eval-reports:
