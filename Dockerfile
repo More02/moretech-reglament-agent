@@ -30,7 +30,8 @@ COPY src ./src
 COPY sdk ./sdk
 COPY libs ./libs
 COPY skills ./skills
-RUN for i in 1 2 3 4 5; do uv pip install --quiet ".[embeddings,pii]" && exit 0; sleep 15; done; exit 1
+# Установка в режиме разработки: скиллы читают промпты и схемы из своих папок в /app/skills
+RUN for i in 1 2 3 4 5; do uv pip install --quiet -e ".[embeddings,pii]" && exit 0; sleep 15; done; exit 1
 COPY passports ./passports
 COPY evals ./evals
 COPY migrations ./migrations
