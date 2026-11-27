@@ -19,7 +19,7 @@ _RESTRICTIVE = re.compile(
 _CONTINUATION = re.compile(
     r"^(?:,\s*)?(?:и|а также|при (?:наличии|условии)|если|кроме|за исключением|после|в случае)\b"
 )
-_CONDITION_INSIDE = re.compile(r"(?:^|\s)(?:и при|при наличии|при условии|а также|за исключением|кроме)\b")
+_CONDITION_INSIDE = re.compile(r"(?:^|\s|\()(?:и при|при наличии|при условии|а также|за исключением|кроме)\b")
 _EXCEPTION_SENTENCE = re.compile(r"^(?:исключени\w*|обязательным условием|кроме того,? исключ)")
 _SENTENCE_END = re.compile(r"[.;!?](?:\s|$)|\n")
 MIN_REST_CHARS = 8
@@ -97,7 +97,7 @@ def full_sentence(quote: str, text: str) -> str:
     return picked
 
 
-_TEXT_CONDITION = re.compile(r"(?:\s|^)(?:и при|при наличии|при условии|за исключением|кроме|исключени\w*)\b")
+_TEXT_CONDITION = re.compile(r"(?:\s|^|\()(?:и при|при наличии|при условии|за исключением|кроме|исключени\w*)\b")
 MIN_COVERAGE = 0.34
 
 
@@ -114,7 +114,7 @@ def dropped_condition(claim: str, quote: str) -> str | None:
     if m is None:
         return None
     tail = q[m.start() :].strip(" ,.;")
-    tail_lemmas = {w for w in lemmas(tail) if len(w) > 3}
+    tail_lemmas = {w for w in lemmas(tail) if len(w) > 2}
     if len(tail_lemmas) < 2:
         return None
     claim_lemmas = set(lemmas(claim))
