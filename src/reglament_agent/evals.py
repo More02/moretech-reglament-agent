@@ -42,6 +42,8 @@ class CaseResult:
     llm_calls: int
     cited: list[str] = field(default_factory=list)
     judge_failed: list[str] = field(default_factory=list)
+    judge_checked: int = 0
+    judge_comments: list[str] = field(default_factory=list)
     note: str = ""
 
 
@@ -97,7 +99,7 @@ def _run_case(c: Container, case: dict[str, Any]) -> CaseResult:
     )
 
 
-def _judge(c: Container, case: CaseResult, reply_claims: list[tuple[str, str]]) -> list[str]:
+def _judge(c: Container, case: CaseResult, reply_claims: list[tuple[str, str]]) -> None:
     """Независимая модель проверяет, что утверждения не искажают источник (answer-verify)."""
     claims = []
     for i, (text, source_id) in enumerate(reply_claims):
@@ -105,9 +107,14 @@ def _judge(c: Container, case: CaseResult, reply_claims: list[tuple[str, str]]) 
         if unit:
             claims.append(ClaimToCheck(id=str(i), text=text, source_text=unit.text))
     if not claims:
-        return []
-    out = AnswerVerify().run(VerifyInput(question=case.question, claims=claims), SkillContext(llm=c.llm))
-    return sorted(out.failed_ids())
+        return
+    out = AnswerVerify().run(VerifyInput(question=case.question, claims=claims), SkillContext(llm=c.agent.judge_llm))
+    case.judge_checked = len(claims)
+    case.judge_failed = sorted(out.failed_ids())
+    texts = {cl.id: cl.text for cl in claims}
+    case.judge_comments = [
+        f"{v.verdict.value}: «{texts[v.id]}» - {v.comment}" for v in out.verdicts if v.id in case.judge_failed
+    ]
 
 
 def _summary(results: list[CaseResult], seconds: float) -> dict[str, Any]:
@@ -130,6 +137,7 @@ def _summary(results: list[CaseResult], seconds: float) -> dict[str, Any]:
         ),
         "clarify_recall": share([r.got == "clarify" for r in results if r.expect == "clarify"]),
         "missing_docs_flagged": share([bool(r.missing_ok) for r in results if r.missing_ok is not None]),
+        "judge_claims_checked": sum(r.judge_checked for r in results),
         "judge_distortions": sum(len(r.judge_failed) for r in results),
         "latency_ms_p50": int(statistics.median(latencies)) if latencies else 0,
         "latency_ms_p95": int(sorted(latencies)[int(len(latencies) * 0.95) - 1]) if latencies else 0,
@@ -157,7 +165,7 @@ def run_eval(settings: Settings, *, limit: int = 0, judge: bool = False) -> floa
         for case in cases:
             r = _run_case(c, case)
             if judge and r.cited:
-                r.judge_failed = _judge_last(c, r)
+                _judge_last(c, r)
             results.append(r)
             log.info(
                 "%s %s → %s %s", r.id, r.expect, r.got, "OK" if r.behavior_ok and r.citation_ok is not False else "FAIL"
@@ -168,7 +176,7 @@ def run_eval(settings: Settings, *, limit: int = 0, judge: bool = False) -> floa
     return float(summary["behavior_accuracy"] or 0.0)
 
 
-def _judge_last(c: Container, r: CaseResult) -> list[str]:
+def _judge_last(c: Container, r: CaseResult) -> None:
     with c.sessions() as s:
         from sqlalchemy import select
 
@@ -177,7 +185,7 @@ def _judge_last(c: Container, r: CaseResult) -> list[str]:
         last = s.scalars(select(TurnRow).where(TurnRow.role == "agent").order_by(TurnRow.id.desc())).first()
         payload = last.payload if last else {}
     claims = [(cl["text"], cl["source_id"]) for v in payload.get("variants", []) for cl in v["claims"]]
-    return _judge(c, r, claims)
+    _judge(c, r, claims)
 
 
 def _check_case_ids(c: Container, cases: list[dict[str, Any]]) -> None:
@@ -199,5 +207,9 @@ def _write(summary: dict[str, Any], results: list[CaseResult]) -> None:
         cit = "-" if r.citation_ok is None else ("да" if r.citation_ok else "нет")
         ok = "да" if r.behavior_ok else "нет"
         lines.append(f"| {r.id} | {r.expect} | {r.got} | {ok} | {cit} | {r.cost_rub} | {r.latency_ms} |")
+    comments = [(r.id, note) for r in results for note in r.judge_comments]
+    if comments:
+        lines += ["", "## Замечания независимого проверяющего", ""]
+        lines += [f"- {cid}: {note}" for cid, note in comments]
     (REPORTS / "latest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=1))

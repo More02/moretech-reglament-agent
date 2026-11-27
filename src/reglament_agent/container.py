@@ -66,21 +66,29 @@ def build_container(settings: Settings, *, mail_transport: MailTransport | None 
     ledger = UsageLedger(sessions)
 
     llm: LLMClient
+    judge_llm: LLMClient
     if settings.llm_fake or not settings.llm_api_key:
         if not settings.llm_fake:
             log.warning("LLM_API_KEY не задан - работаю на тестовой модели")
-        llm = FakeLLM(FAKE_HANDLERS)
+        llm = judge_llm = FakeLLM(FAKE_HANDLERS)
     else:
-        llm = OpenAICompatibleLLM(
-            base_url=settings.llm_base_url,
-            api_key=settings.llm_api_key,
-            model=settings.llm_model,
-            pricing=Pricing(settings.llm_price_input_usd_per_m, settings.llm_price_output_usd_per_m, settings.usd_rub),
-            pii=PiiGuard(enabled=settings.pii_masking),
-            timeout=settings.llm_timeout_seconds,
-            spent_today=ledger.spent_today,
-            daily_budget_rub=settings.llm_daily_budget_rub,
-            on_usage=ledger.record,
+
+        def gateway(model: str, price_in: float, price_out: float) -> OpenAICompatibleLLM:
+            return OpenAICompatibleLLM(
+                base_url=settings.llm_base_url,
+                api_key=settings.llm_api_key,
+                model=model,
+                pricing=Pricing(price_in, price_out, settings.usd_rub),
+                pii=PiiGuard(enabled=settings.pii_masking),
+                timeout=settings.llm_timeout_seconds,
+                spent_today=ledger.spent_today,
+                daily_budget_rub=settings.llm_daily_budget_rub,
+                on_usage=ledger.record,
+            )
+
+        llm = gateway(settings.llm_model, settings.llm_price_input_usd_per_m, settings.llm_price_output_usd_per_m)
+        judge_llm = gateway(
+            settings.judge_model, settings.judge_price_input_usd_per_m, settings.judge_price_output_usd_per_m
         )
 
     if mail_transport is None:
@@ -123,6 +131,7 @@ def build_container(settings: Settings, *, mail_transport: MailTransport | None 
         mail=mail,
         llm=llm,
         strict_verify=settings.strict_verify,
+        judge_llm=judge_llm,
         on_usage=ledger.record_context,
         document_url=lambda doc_id: f"{settings.public_base_url.rstrip('/')}/api/documents/{doc_id}",
     )

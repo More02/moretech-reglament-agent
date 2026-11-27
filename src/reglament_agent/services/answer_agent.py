@@ -10,7 +10,7 @@ import logging
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from sqlalchemy import select
@@ -79,6 +79,7 @@ class AnswerAgent:
         mail: MailAgent,
         llm: LLMClient,
         strict_verify: bool = False,
+        judge_llm: LLMClient | None = None,
         on_usage: Callable[[SkillContext], None] = lambda _c: None,
         document_url: Callable[[str], str] = lambda doc_id: f"/documents/{doc_id}",
     ) -> None:
@@ -89,6 +90,8 @@ class AnswerAgent:
         self.mail = mail
         self.llm = llm
         self.strict_verify = strict_verify
+        # Проверяющий - другая, более крупная модель: независимость от того, кто формулировал ответ.
+        self.judge_llm = judge_llm or llm
         self.on_usage = on_usage
         self.document_url = document_url
         self.glossary = passport.build_glossary()
@@ -281,7 +284,8 @@ class AnswerAgent:
             for vi, v in enumerate(comp.variants)
             for ci, c in enumerate(v.claims)
         ]
-        failed = self.verify_skill.run(VerifyInput(question=inp.question, claims=claims), tc.skill_ctx).failed_ids()
+        judge_ctx = replace(tc.skill_ctx, llm=self.judge_llm)
+        failed = self.verify_skill.run(VerifyInput(question=inp.question, claims=claims), judge_ctx).failed_ids()
         variants = []
         for vi, v in enumerate(comp.variants):
             kept = [c for ci, c in enumerate(v.claims) if f"{vi}:{ci}" not in failed]

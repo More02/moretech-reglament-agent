@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     llm_price_output_usd_per_m: float = 2.25
     usd_rub: float = 82.0
     llm_daily_budget_rub: float = 500.0
+    # Независимый проверяющий (строгий режим и оценка качества) - более крупная открытая модель
+    judge_model: str = "qwen3.5-122b-a10b"
+    judge_price_input_usd_per_m: float = 0.40
+    judge_price_output_usd_per_m: float = 3.20
     strict_verify: bool = Field(default=False, description="Дополнительно проверять ответ второй моделью")
 
     # Эмбеддинги

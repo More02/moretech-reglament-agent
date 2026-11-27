@@ -12,7 +12,7 @@ from answer_compose.models import (
     Variant,
     VerifiedComposition,
 )
-from evidence import numbers, texts_differ, verify_claim
+from evidence import full_sentence, lost_condition, numbers, texts_differ, verify_claim
 
 
 def _allowed_sources(inp: ComposeInput) -> dict[str, dict[str, str]]:
@@ -116,3 +116,39 @@ def _valid_conflict(conflict: Conflict | None, allowed: dict[str, dict[str, str]
         if len(conflict.source_ids) >= 2 and all(sid in texts for sid in conflict.source_ids):
             return conflict
     return None
+
+
+def lost_conditions(out: VerifiedComposition, inp: ComposeInput) -> list[str]:
+    """Замечания модели: утверждение опирается на начало правила, а второе условие или исключение потеряно."""
+    allowed = _allowed_sources(inp)
+    notes: list[str] = []
+    for variant in out.variants:
+        quotes = [c.quote for c in variant.claims]
+        for claim in variant.claims:
+            others = [q for q in quotes if q is not claim.quote]
+            rest = lost_condition(claim.quote, allowed[variant.department_id][claim.source_id], others)
+            if rest:
+                notes.append(
+                    f"{variant.department_id}: утверждение «{claim.text}» ({claim.source_id}) неполное - "
+                    f"в источнике правило продолжается: «{rest}». Включи это условие в утверждение и цитату."
+                )
+    return notes
+
+
+def complete_conditions(out: VerifiedComposition, inp: ComposeInput) -> VerifiedComposition:
+    """Если модель так и не дописала условие - утверждением становится само предложение регламента целиком.
+    Дословный текст источника не искажает правило, в отличие от его половины."""
+    allowed = _allowed_sources(inp)
+    variants: list[Variant] = []
+    for variant in out.variants:
+        quotes = [c.quote for c in variant.claims]
+        claims: list[Claim] = []
+        for claim in variant.claims:
+            text = allowed[variant.department_id][claim.source_id]
+            others = [q for q in quotes if q is not claim.quote]
+            if lost_condition(claim.quote, text, others):
+                sentence = full_sentence(claim.quote, text)
+                claim = claim.model_copy(update={"text": sentence, "quote": sentence})
+            claims.append(claim)
+        variants.append(variant.model_copy(update={"claims": claims}))
+    return out.model_copy(update={"variants": variants})

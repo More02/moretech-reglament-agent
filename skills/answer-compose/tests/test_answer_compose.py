@@ -175,3 +175,41 @@ def test_no_sources_means_no_model_call() -> None:
     out = AnswerCompose().run(inp, SkillContext(llm=llm))
     assert llm.requests == []
     assert out.variants[0].status is Status.NOT_FOUND
+
+
+SUB = DepartmentSources(
+    id="ib",
+    name="ИБ",
+    sources=[
+        Source(
+            id="ib-project:4.1",
+            ref="п. 4.1",
+            text="РП может привлечь субподрядчика к выполнению работ только после подписания субподрядного договора "
+            "и при наличии Заказа покупателя в учётной системе, по которому пришла оплата или согласована КИ.",
+        )
+    ],
+)
+HALF = "РП может привлечь субподрядчика к выполнению работ только после подписания субподрядного договора"
+
+
+def _half_rule(user: str) -> dict[str, Any]:
+    del user
+    claim = {"text": "Субподрядчика можно привлечь после подписания договора.", "source_id": "ib-project:4.1"}
+    return {
+        "variants": [{"department_id": "ib", "status": "answered", "claims": [{**claim, "quote": HALF}]}],
+        "same_across_departments": False,
+        "conflict": None,
+        "missing_documents": [],
+    }
+
+
+def test_lost_condition_asks_model_again_with_feedback() -> None:
+    llm = FakeLLM({"answer-compose/compose": _half_rule})
+    inp = ComposeInput(question="Когда можно подключать субподрядчика?", departments=[SUB])
+    out = AnswerCompose().run(inp, SkillContext(llm=llm))
+    assert len(llm.requests) == 2
+    assert "Заказа покупателя" in llm.requests[1][1]
+    # Модель не исправилась - утверждением становится предложение регламента целиком.
+    claim = out.variants[0].claims[0]
+    assert "Заказа покупателя" in claim.text
+    assert claim.quote == claim.text
