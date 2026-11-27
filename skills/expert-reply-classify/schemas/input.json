@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "Message": {
+      "additionalProperties": false,
+      "properties": {
+        "sender": {
+          "title": "Sender",
+          "type": "string"
+        },
+        "body": {
+          "title": "Body",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sender",
+        "body"
+      ],
+      "title": "Message",
+      "type": "object"
+    },
+    "SenderRole": {
+      "enum": [
+        "quality",
+        "added_by_quality",
+        "employee",
+        "unknown"
+      ],
+      "title": "SenderRole",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "thread": {
+      "items": {
+        "$ref": "#/$defs/Message"
+      },
+      "title": "Thread",
+      "type": "array"
+    },
+    "message": {
+      "$ref": "#/$defs/Message"
+    },
+    "sender_role": {
+      "$ref": "#/$defs/SenderRole"
+    }
+  },
+  "required": [
+    "question",
+    "message",
+    "sender_role"
+  ],
+  "title": "ClassifyInput",
+  "type": "object"
+}

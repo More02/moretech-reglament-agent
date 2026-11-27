@@ -1,0 +1,43 @@
+{
+  "$defs": {
+    "Cluster": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "question_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Question Ids",
+          "type": "array"
+        },
+        "suggestion": {
+          "default": "",
+          "title": "Suggestion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "question_ids"
+      ],
+      "title": "Cluster",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clusters": {
+      "items": {
+        "$ref": "#/$defs/Cluster"
+      },
+      "title": "Clusters",
+      "type": "array"
+    }
+  },
+  "title": "Clusters",
+  "type": "object"
+}

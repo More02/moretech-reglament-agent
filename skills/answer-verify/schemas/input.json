@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "ClaimToCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "source_text": {
+          "title": "Source Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "source_text"
+      ],
+      "title": "ClaimToCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/ClaimToCheck"
+      },
+      "title": "Claims",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question",
+    "claims"
+  ],
+  "title": "VerifyInput",
+  "type": "object"
+}

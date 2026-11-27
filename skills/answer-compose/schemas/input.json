@@ -1,0 +1,128 @@
+{
+  "$defs": {
+    "DepartmentSources": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sources"
+      ],
+      "title": "DepartmentSources",
+      "type": "object"
+    },
+    "ExpertNote": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "note:<номер>",
+          "title": "Id",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        },
+        "department_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Department Ids",
+          "type": "array"
+        },
+        "date": {
+          "default": "",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "question",
+        "answer"
+      ],
+      "title": "ExpertNote",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "clause_id пункта",
+          "title": "Id",
+          "type": "string"
+        },
+        "ref": {
+          "description": "Как ссылаться: «п. 2.4, Проектная деятельность ДБРЦТ»",
+          "title": "Ref",
+          "type": "string"
+        },
+        "path": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Path",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "ref",
+        "text"
+      ],
+      "title": "Source",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "departments": {
+      "items": {
+        "$ref": "#/$defs/DepartmentSources"
+      },
+      "title": "Departments",
+      "type": "array"
+    },
+    "expert_notes": {
+      "items": {
+        "$ref": "#/$defs/ExpertNote"
+      },
+      "title": "Expert Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question",
+    "departments"
+  ],
+  "title": "ComposeInput",
+  "type": "object"
+}

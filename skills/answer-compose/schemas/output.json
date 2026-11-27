@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "source_id",
+        "quote"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Conflict": {
+      "additionalProperties": false,
+      "properties": {
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_ids",
+        "description"
+      ],
+      "title": "Conflict",
+      "type": "object"
+    },
+    "RejectedClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "department_id": {
+          "title": "Department Id",
+          "type": "string"
+        },
+        "claim": {
+          "$ref": "#/$defs/Claim"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "department_id",
+        "claim",
+        "reason"
+      ],
+      "title": "RejectedClaim",
+      "type": "object"
+    },
+    "Status": {
+      "enum": [
+        "answered",
+        "partial",
+        "not_found"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "Variant": {
+      "additionalProperties": false,
+      "properties": {
+        "department_id": {
+          "title": "Department Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "lead": {
+          "default": "",
+          "title": "Lead",
+          "type": "string"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "gap": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gap"
+        }
+      },
+      "required": [
+        "department_id",
+        "status"
+      ],
+      "title": "Variant",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Ответ после проверки кодом: в ``variants`` остались только подтверждённые утверждения.",
+  "properties": {
+    "variants": {
+      "items": {
+        "$ref": "#/$defs/Variant"
+      },
+      "title": "Variants",
+      "type": "array"
+    },
+    "same_across_departments": {
+      "title": "Same Across Departments",
+      "type": "boolean"
+    },
+    "conflict": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Conflict"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "missing_documents": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Documents",
+      "type": "array"
+    },
+    "rejected": {
+      "items": {
+        "$ref": "#/$defs/RejectedClaim"
+      },
+      "title": "Rejected",
+      "type": "array"
+    }
+  },
+  "required": [
+    "variants",
+    "same_across_departments",
+    "conflict",
+    "missing_documents"
+  ],
+  "title": "VerifiedComposition",
+  "type": "object"
+}

@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "CandidateClause": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "ref",
+        "text"
+      ],
+      "title": "CandidateClause",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "expert_answer": {
+      "title": "Expert Answer",
+      "type": "string"
+    },
+    "departments": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "id → название",
+      "title": "Departments",
+      "type": "object"
+    },
+    "employee_department": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Employee Department"
+    },
+    "candidate_clauses": {
+      "items": {
+        "$ref": "#/$defs/CandidateClause"
+      },
+      "title": "Candidate Clauses",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question",
+    "expert_answer",
+    "departments"
+  ],
+  "title": "ExtractInput",
+  "type": "object"
+}

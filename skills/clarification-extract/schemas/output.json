@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "canonical_question": {
+      "title": "Canonical Question",
+      "type": "string"
+    },
+    "answer": {
+      "title": "Answer",
+      "type": "string"
+    },
+    "answer_quotes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Answer Quotes",
+      "type": "array"
+    },
+    "department_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Department Ids",
+      "type": "array"
+    },
+    "related_clause_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Related Clause Ids",
+      "type": "array"
+    },
+    "keywords": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Keywords",
+      "type": "array"
+    }
+  },
+  "required": [
+    "canonical_question",
+    "answer"
+  ],
+  "title": "Clarification",
+  "type": "object"
+}

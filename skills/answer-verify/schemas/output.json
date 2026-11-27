@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "ClaimVerdict": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "comment": {
+          "default": "",
+          "title": "Comment",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "verdict"
+      ],
+      "title": "ClaimVerdict",
+      "type": "object"
+    },
+    "Verdict": {
+      "enum": [
+        "supported",
+        "distorted",
+        "unsupported"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "verdicts": {
+      "items": {
+        "$ref": "#/$defs/ClaimVerdict"
+      },
+      "title": "Verdicts",
+      "type": "array"
+    }
+  },
+  "title": "VerifyOutput",
+  "type": "object"
+}

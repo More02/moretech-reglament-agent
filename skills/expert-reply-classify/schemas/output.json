@@ -1,0 +1,44 @@
+{
+  "$defs": {
+    "ReplyKind": {
+      "enum": [
+        "final_answer",
+        "question_to_employee",
+        "forwarded_to_owner",
+        "acknowledgement",
+        "other"
+      ],
+      "title": "ReplyKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "$ref": "#/$defs/ReplyKind"
+    },
+    "answer_text": {
+      "default": "",
+      "title": "Answer Text",
+      "type": "string"
+    },
+    "confidence": {
+      "default": 0.5,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "decided_by": {
+      "default": "model",
+      "description": "model | marker | role",
+      "title": "Decided By",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "Classification",
+  "type": "object"
+}

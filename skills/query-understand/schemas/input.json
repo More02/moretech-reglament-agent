@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "DepartmentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "DepartmentRef",
+      "type": "object"
+    },
+    "Turn": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "description": "employee или agent",
+          "title": "Role",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "text"
+      ],
+      "title": "Turn",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/Turn"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "departments": {
+      "items": {
+        "$ref": "#/$defs/DepartmentRef"
+      },
+      "title": "Departments",
+      "type": "array"
+    },
+    "glossary_hits": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "сокращение/синоним → термин",
+      "title": "Glossary Hits",
+      "type": "object"
+    },
+    "out_of_scope_topics": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Out Of Scope Topics",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question",
+    "departments"
+  ],
+  "title": "UnderstandInput",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "GapQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "department": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Department"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "GapQuestion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/GapQuestion"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "documents": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Documents",
+      "type": "array"
+    }
+  },
+  "required": [
+    "questions"
+  ],
+  "title": "ClusterInput",
+  "type": "object"
+}

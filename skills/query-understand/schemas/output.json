@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "Intent": {
+      "enum": [
+        "regulation_question",
+        "find_document",
+        "out_of_scope",
+        "off_task",
+        "greeting"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "Process": {
+      "enum": [
+        "presale",
+        "project"
+      ],
+      "title": "Process",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "intent": {
+      "$ref": "#/$defs/Intent"
+    },
+    "standalone_question": {
+      "title": "Standalone Question",
+      "type": "string"
+    },
+    "search_queries": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 3,
+      "title": "Search Queries",
+      "type": "array"
+    },
+    "departments": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Departments",
+      "type": "array"
+    },
+    "complex_project": {
+      "default": false,
+      "title": "Complex Project",
+      "type": "boolean"
+    },
+    "process": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Process"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "out_of_scope_topic": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Out Of Scope Topic"
+    }
+  },
+  "required": [
+    "intent",
+    "standalone_question"
+  ],
+  "title": "Understanding",
+  "type": "object"
+}
