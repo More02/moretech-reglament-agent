@@ -10,7 +10,7 @@ RUN npm run build
 # ---------- приложение ----------
 FROM python:3.12-slim AS app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/models UV_SYSTEM_PYTHON=1 \
+    HF_HOME=/models UV_SYSTEM_PYTHON=1 APP_ROOT=/app \
     PASSPORT_PATH=/app/passports/softline.yaml REGULATIONS_DIR=/app/data/regulations \
     EMBEDDINGS_CACHE_PATH=/app/data/cache/embeddings.sqlite
 RUN pip install --quiet uv \

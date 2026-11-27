@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ROOT = Path(__file__).resolve().parents[2]
+_SOURCE_ROOT = Path(__file__).resolve().parents[2]
+# Корень проекта: в исходниках - каталог репозитория; в контейнере пакет установлен в site-packages,
+# поэтому корень задаёт APP_ROOT (в образе - /app), иначе - текущий каталог.
+ROOT = Path(os.environ.get("APP_ROOT") or (_SOURCE_ROOT if (_SOURCE_ROOT / "passports").is_dir() else Path.cwd()))
 
 
 class Settings(BaseSettings):
