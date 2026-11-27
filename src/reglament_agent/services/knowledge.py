@@ -19,6 +19,8 @@ from reglament_agent.passport import DocumentDef, Passport
 from reglament_agent.services.retrieval import HybridIndex, Unit
 
 log = logging.getLogger(__name__)
+# «disputed» - два эксперта ответили по-разному: оба ответа показываются с пометкой до решения службы качества
+SEARCHABLE_NOTE_STATUSES = ("published", "disputed")
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,6 +146,8 @@ class KnowledgeBase:
         keywords: list[str],
         expert: str,
         ticket_id: int | None,
+        status: str = "published",
+        review_reason: str = "",
     ) -> NoteRow:
         vec = self.embedder.embed([f"{question}\n{answer}\n{' '.join(keywords)}"])[0]
         with self.sessions.begin() as s:
@@ -160,7 +164,8 @@ class KnowledgeBase:
                 expert=expert,
                 ticket_id=ticket_id,
                 embedding=to_bytes(vec),
-                status="published",
+                status=status,
+                review_reason=review_reason,
             )
             s.add(note)
             s.flush()
@@ -179,6 +184,7 @@ class KnowledgeBase:
 
     def rebuild_index(self) -> None:
         units: list[Unit] = []
+        sub_texts: list[str] = []
         vectors: list[np.ndarray[Any, np.dtype[np.float32]]] = []
         with self.sessions() as s:
             titles = {d.id: d.title for d in s.scalars(select(DocumentRow))}
@@ -200,22 +206,51 @@ class KnowledgeBase:
                     )
                 )
                 vectors.append(from_bytes(c.embedding) if c.embedding else self.embedder.embed([c.text])[0])
-            for n in s.scalars(select(NoteRow).where(NoteRow.status == "published")):
+                for i, line in enumerate(self._sub_lines(c.text)):
+                    sub_text = f"{c.heading}\n{line}"
+                    units.append(
+                        Unit(
+                            id=f"{c.id}#{i}",
+                            kind="clause",
+                            departments=(c.department,),
+                            process=c.process,
+                            title="",
+                            text=sub_text,
+                            search_text=sub_text,
+                            alias_of=c.id,
+                        )
+                    )
+                    sub_texts.append(sub_text)
+                    vectors.append(np.zeros_like(vectors[-1]))
+            for n in s.scalars(select(NoteRow).where(NoteRow.status.in_(SEARCHABLE_NOTE_STATUSES))):
                 units.append(
                     Unit(
                         id=n.note_id,
                         kind="note",
                         departments=tuple(n.department_ids),
                         process=None,
-                        title=f"Разъяснение службы качества от {n.created_at:%d.%m.%Y}",
+                        title=f"Разъяснение службы качества от {n.created_at:%d.%m.%Y}"
+                        + (" (эксперты ответили по-разному)" if n.status == "disputed" else ""),
                         text=n.answer,
                         search_text=f"{n.canonical_question}\n{n.answer}\n{' '.join(n.keywords)}",
                     )
                 )
                 vectors.append(from_bytes(n.embedding) if n.embedding else self.embedder.embed([n.answer])[0])
         matrix = np.vstack(vectors).astype(np.float32) if vectors else None
+        if matrix is not None and sub_texts:
+            sub_vectors = self.embedder.embed(sub_texts)
+            sub_rows = [i for i, u in enumerate(units) if u.alias_of]
+            matrix[sub_rows] = sub_vectors
         self.index.rebuild(units, matrix)
         log.info("индекс пересобран: %d единиц", len(units))
+
+    @staticmethod
+    def _sub_lines(text: str) -> list[str]:
+        """Строки длинного пункта (перечисления, «Важно:»), которые стоит искать отдельно."""
+        lines = [ln.strip("• ").strip() for ln in text.split("\n")[1:]]
+        if len(text) < 400 or len(lines) < 2:
+            return []
+        return [ln for ln in lines if len(ln) >= 25]
 
     def missing_references(self, clause_ids: Iterable[str]) -> list[str]:
         """Внешние документы и несуществующие пункты, на которые ссылаются указанные пункты."""

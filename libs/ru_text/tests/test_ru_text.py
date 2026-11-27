@@ -31,3 +31,8 @@ def test_inflected_synonym_is_found() -> None:
 def test_expand_adds_canonical_names_once() -> None:
     assert GLOSSARY.expand("Срок РТЗ") == "Срок РТЗ (Расчёт трудозатрат)"
     assert GLOSSARY.expand("Срок расчёта трудозатрат РТЗ") == "Срок расчёта трудозатрат РТЗ"
+
+
+def test_participles_are_reduced_to_infinitive() -> None:
+    assert "инициировать" in lemmas("Заявка должна быть инициирована")
+    assert "согласовать" in lemmas("без согласованной сметы")

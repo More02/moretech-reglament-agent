@@ -133,3 +133,87 @@ def test_changed_clause_flags_linked_note(app: tuple[Container, MemoryMailbox]) 
     report = c.kb.ingest([(meta, changed)])
     assert "alpha-doc:2.1" in report.changed_clauses
     assert report.notes_flagged == [note.id]
+
+
+def _escalated(c: Container, mailbox: MemoryMailbox) -> tuple[str, str]:
+    conv = c.agent.start(EMPLOYEE.model_copy(update={"department": "alpha"}))
+    c.agent.ask(conv, "Компенсируют ли такси в командировке в выходной день?")
+    sent = c.agent.choose(conv, "escalate")
+    assert sent.ticket is not None
+    msg_id, mail = mailbox.sent[-1]
+    return msg_id, mail.subject
+
+
+def _reply(mailbox: MemoryMailbox, mid: str, sender: str, subject: str, body: str, parent: str) -> None:
+    mailbox.deliver(
+        IncomingMail(
+            message_id=mid,
+            sender=sender,
+            recipients=["agent@corp.test"],
+            subject=f"Re: {subject}",
+            body=body,
+            in_reply_to=parent,
+        )
+    )
+
+
+def test_two_experts_disagree_both_answers_kept_and_flagged(app: tuple[Container, MemoryMailbox]) -> None:
+    c, mailbox = app
+    c.mail.authorized.append("@corp.test")
+    msg_id, subject = _escalated(c, mailbox)
+    _reply(
+        mailbox,
+        "<a@x>",
+        "quality@corp.test",
+        subject,
+        "Такси в выходной день в командировке компенсируется полностью.",
+        msg_id,
+    )
+    _reply(
+        mailbox,
+        "<b@x>",
+        "head@corp.test",
+        subject,
+        "Нет, компенсация такси возможна только до 2000 рублей по чеку и с согласования директора.",
+        msg_id,
+    )
+    report = c.mail.poll()
+    assert len(report.published_notes) == 2
+    summary = c.analytics.summary()
+    assert len(summary["notes"]["needs_review"]) == 0
+    from sqlalchemy import select
+
+    from reglament_agent.adapters.db import NoteRow
+
+    with c.sessions() as s:
+        statuses = sorted(n.status for n in s.scalars(select(NoteRow)))
+    assert statuses == ["disputed", "disputed"]
+
+
+def test_same_expert_correction_supersedes(app: tuple[Container, MemoryMailbox]) -> None:
+    c, mailbox = app
+    msg_id, subject = _escalated(c, mailbox)
+    _reply(
+        mailbox,
+        "<a@x>",
+        "quality@corp.test",
+        subject,
+        "Такси в выходной день в командировке компенсируется полностью.",
+        msg_id,
+    )
+    _reply(
+        mailbox,
+        "<b@x>",
+        "quality@corp.test",
+        subject,
+        "Поправка: такси компенсируется только при согласовании руководителя проекта.",
+        msg_id,
+    )
+    c.mail.poll()
+    from sqlalchemy import select
+
+    from reglament_agent.adapters.db import NoteRow
+
+    with c.sessions() as s:
+        statuses = sorted(n.status for n in s.scalars(select(NoteRow)))
+    assert statuses == ["published", "retired"]

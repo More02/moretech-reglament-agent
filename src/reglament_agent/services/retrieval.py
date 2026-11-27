@@ -37,6 +37,7 @@ class Unit:
     parent: str | None = None
     doc_id: str | None = None
     number: str | None = None
+    alias_of: str | None = None  # строка-перечисление длинного пункта: находится отдельно, отдаётся пункт целиком
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,35 +111,46 @@ class HybridIndex:
     ) -> dict[str, list[Hit]]:
         """Лучшие единицы для каждого подразделения из ``departments``. Стадия процесса - мягкий приоритет."""
         st = self._state
+        out: dict[str, list[Hit]] = {d: [] for d in departments}
         if not st.units or st.bm25 is None:
-            return {d: [] for d in departments}
-        queries = [q for q in queries if q.strip()]
-        fused: dict[int, float] = defaultdict(float)
-        best_bm25: dict[int, int] = {}
-        best_dense: dict[int, int] = {}
-        dense_scores = np.zeros(len(st.units), dtype=np.float32)
+            return out
+        fusion = self._fuse(st, [q for q in queries if q.strip()])
+        taken: dict[str, set[str]] = {d: set() for d in departments}
+        for idx, score in sorted(fusion.scores.items(), key=lambda kv: -kv[1]):
+            unit = st.by_id.get(st.units[idx].alias_of or "", st.units[idx])
+            if unit.kind != kind:
+                continue
+            boost = 1.15 if process and unit.process == process else 1.0
+            hit = Hit(unit, score * boost, fusion.bm25.get(idx), fusion.dense.get(idx), float(fusion.dense_scores[idx]))
+            for dep in departments if not unit.departments else [d for d in unit.departments if d in out]:
+                if len(out[dep]) < per_department and unit.id not in taken[dep]:
+                    taken[dep].add(unit.id)
+                    out[dep].append(hit)
+        for dep in out:
+            out[dep].sort(key=lambda h: -h.score)
+        return out
+
+    def _fuse(self, st: _State, queries: list[str]) -> _Fusion:
+        """Reciprocal Rank Fusion рейтингов BM25 и векторного поиска по всем переформулировкам запроса."""
+        fusion = _Fusion(dense_scores=np.zeros(len(st.units), dtype=np.float32))
+        if st.bm25 is None:
+            return fusion
         for q in queries:
             bm = np.asarray(st.bm25.get_scores(self._tokens(q)), dtype=np.float32)
             qv = self.embedder.embed([self.glossary.expand(q)])[0]
             dn = st.vectors @ qv if st.vectors.shape[0] else np.zeros(len(st.units), dtype=np.float32)
-            dense_scores = np.maximum(dense_scores, dn)
-            for ranks, store in ((np.argsort(-bm), best_bm25), (np.argsort(-dn), best_dense)):
+            fusion.dense_scores = np.maximum(fusion.dense_scores, dn)
+            for ranks, store in ((np.argsort(-bm), fusion.bm25), (np.argsort(-dn), fusion.dense)):
                 for rank, idx in enumerate(ranks[:200]):
                     i = int(idx)
-                    fused[i] += 1.0 / (RRF_K + rank + 1)
+                    fusion.scores[i] += 1.0 / (RRF_K + rank + 1)
                     store[i] = min(store.get(i, rank), rank)
-        out: dict[str, list[Hit]] = {d: [] for d in departments}
-        for idx, score in sorted(fused.items(), key=lambda kv: -kv[1]):
-            unit = st.units[idx]
-            if unit.kind != kind:
-                continue
-            boost = 1.15 if process and unit.process == process else 1.0
-            targets = departments if not unit.departments else [d for d in unit.departments if d in out]
-            for dep in targets:
-                if len(out[dep]) < per_department:
-                    out[dep].append(
-                        Hit(unit, score * boost, best_bm25.get(idx), best_dense.get(idx), float(dense_scores[idx]))
-                    )
-        for dep in out:
-            out[dep].sort(key=lambda h: -h.score)
-        return out
+        return fusion
+
+
+@dataclass
+class _Fusion:
+    dense_scores: NDArray[np.float32]
+    scores: defaultdict[int, float] = field(default_factory=lambda: defaultdict(float))
+    bm25: dict[int, int] = field(default_factory=dict)
+    dense: dict[int, int] = field(default_factory=dict)

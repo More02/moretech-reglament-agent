@@ -11,6 +11,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from clarification_extract import CandidateClause, ClarificationExtract, ExtractInput
+from evidence import numbers
 from expert_reply_classify import ClassifyInput, ExpertReplyClassify, Message, ReplyKind, SenderRole
 from reglament_agent.adapters.db import ClauseRow, DocumentRow, MailRow, NoteRow, TicketRow, TurnRow, utcnow
 from reglament_agent.adapters.mail import IncomingMail, MailTransport, OutgoingMail
@@ -18,6 +19,7 @@ from reglament_agent.domain import AgentReply, Profile, TicketView
 from reglament_agent.domain import ReplyKind as ChatKind
 from reglament_agent.passport import Passport
 from reglament_agent.services.knowledge import KnowledgeBase, clause_ref
+from ru_text import lemmas
 from skill_sdk import LLMClient, LLMError, SkillContext
 
 log = logging.getLogger(__name__)
@@ -29,6 +31,16 @@ class PollReport:
     received: int
     matched: int
     published_notes: list[int]
+
+
+def answers_differ(a: str, b: str) -> bool:
+    """Ответы расходятся по сути: разные числа или мало общих слов. Перефразирование расхождением не считается."""
+    if numbers(a) != numbers(b):
+        return True
+    la, lb = set(lemmas(a)), set(lemmas(b))
+    if not la or not lb:
+        return False
+    return len(la & lb) / len(la | lb) < 0.45
 
 
 class MailAgent:
@@ -247,11 +259,18 @@ class MailAgent:
         finally:
             self.on_usage(ctx)
         with self.sessions() as s:
-            previous = s.scalars(
-                select(NoteRow).where(NoteRow.ticket_id == ticket_id, NoteRow.status == "published")
-            ).all()
-            for old in previous:
-                self.kb.set_note_status(old.id, "retired", "заменено более поздним ответом эксперта")
+            previous = list(
+                s.scalars(
+                    select(NoteRow).where(NoteRow.ticket_id == ticket_id, NoteRow.status.in_(("published", "disputed")))
+                )
+            )
+        same_expert = [n for n in previous if n.expert == expert]
+        other_experts = [n for n in previous if n.expert != expert]
+        disputed = [n for n in other_experts if answers_differ(n.answer, clar.answer)]
+        for old in same_expert:
+            self.kb.set_note_status(old.id, "retired", "заменено исправленным ответом того же эксперта")
+        for old in disputed:
+            self.kb.set_note_status(old.id, "disputed", f"другой эксперт ({expert}) ответил иначе")
         note = self.kb.add_note(
             question=clar.canonical_question,
             answer=clar.answer,
@@ -260,20 +279,29 @@ class MailAgent:
             keywords=clar.keywords,
             expert=expert,
             ticket_id=ticket_id,
+            status="disputed" if disputed else "published",
+            review_reason=f"ответ расходится с ответом {disputed[0].expert}" if disputed else "",
         )
         with self.sessions.begin() as s:
             t = s.get(TicketRow, ticket_id)
             if t is None:
-                raise RuntimeError("нарушен инвариант: t отсутствует")
-            if previous:
-                s.get(NoteRow, note.id).supersedes_id = previous[-1].id  # type: ignore[union-attr]
+                raise RuntimeError("обращение исчезло во время публикации ответа")
+            row = s.get(NoteRow, note.id)
+            if row is not None and same_expert:
+                row.supersedes_id = same_expert[-1].id
             t.status, t.answered_at, t.note_id = "answered", utcnow(), note.id
-            self._notify(
-                s,
-                t,
-                f"Служба качества ответила на ваш вопрос (обращение {t.code}):\n\n{clar.answer}\n\n"
-                "Ответ добавлен в базу знаний - на похожие вопросы агент теперь ответит сам.",
-            )
+            if disputed:
+                text = (
+                    f"По обращению {t.code} эксперты службы качества ответили по-разному:\n\n"
+                    + "\n\n".join(f"{n.expert}: {n.answer}" for n in [*disputed, row or note])
+                    + "\n\nОба ответа сохранены с пометкой - служба качества выберет итоговый."
+                )
+            else:
+                text = (
+                    f"Служба качества ответила на ваш вопрос (обращение {t.code}):\n\n{clar.answer}\n\n"
+                    "Ответ добавлен в базу знаний - на похожие вопросы агент теперь ответит сам."
+                )
+            self._notify(s, t, text)
         return note.id
 
     def _notify(self, s: Session, ticket: TicketRow, text: str) -> None:

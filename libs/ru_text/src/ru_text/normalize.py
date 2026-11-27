@@ -154,7 +154,15 @@ def lemma(word: str) -> str:
     if not re.search("[а-я]", word):
         return word
     parsed = _morph().parse(word)  # type: ignore[attr-defined]
-    return str(parsed[0].normal_form).replace("ё", "е") if parsed else word
+    if not parsed:
+        return word
+    best = parsed[0]
+    # Причастия и деепричастия → глагол: «инициирована» и «инициировать» должны совпадать в поиске
+    if best.tag.POS in ("PRTF", "PRTS", "GRND"):
+        infinitive = best.inflect({"INFN"})
+        if infinitive is not None:
+            return str(infinitive.word).replace("ё", "е")
+    return str(best.normal_form).replace("ё", "е")
 
 
 def lemmas(text: str, *, drop_stopwords: bool = True) -> list[str]:
