@@ -162,7 +162,9 @@ export function Chat({ meta, profile }: Props) {
               </div>
             ) : (
               <div key={i} className="msg-row">
-                <span className="bot-mark">MT</span>
+                <span className="bot-mark">
+                  <img src="/mono-gold.svg" alt="" />
+                </span>
                 <Reply
                   reply={it.reply}
                   active={i === items.length - 1 && !busy}
@@ -174,7 +176,9 @@ export function Chat({ meta, profile }: Props) {
           )}
           {busy && (
             <div className="msg-row">
-              <span className="bot-mark pulse">MT</span>
+              <span className="bot-mark pulse">
+                <img src="/mono-gold.svg" alt="" />
+              </span>
               <Thinking />
             </div>
           )}

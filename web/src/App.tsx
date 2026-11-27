@@ -28,11 +28,8 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <button className="brand" onClick={() => go("chat")} aria-label="На главную">
-          <span className="monogram">MT</span>
-          <span className="brand-text">
-            <span className="brand-name">MORE TECH</span>
-            <span className="brand-sub">Агент по регламентам{meta ? ` · ${meta.company}` : ""}</span>
-          </span>
+          <img className="logo" src="/logo.svg" alt="MORE TECH" />
+          <span className="brand-sub">Агент по регламентам{meta ? ` · ${meta.company}` : ""}</span>
         </button>
         <nav className="switcher" aria-label="Раздел">
           <button className={view === "chat" ? "on" : ""} onClick={() => go("chat")}>

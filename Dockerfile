@@ -14,13 +14,15 @@ RUN pip install --quiet uv \
  && useradd --create-home --uid 10001 app
 WORKDIR /app
 # Torch только для CPU: эмбеддинги BGE-M3 считаются на процессоре сервера
-RUN uv pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+# Сеть до зеркал пакетов бывает нестабильной: большие колёса (torch ~200 МБ) скачиваем с повторами
+ENV UV_HTTP_TIMEOUT=600
+RUN for i in 1 2 3 4 5; do uv pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu && exit 0; sleep 15; done; exit 1
 COPY pyproject.toml README.md ./
 COPY src ./src
 COPY sdk ./sdk
 COPY libs ./libs
 COPY skills ./skills
-RUN uv pip install --quiet ".[embeddings,pii]"
+RUN for i in 1 2 3 4 5; do uv pip install --quiet ".[embeddings,pii]" && exit 0; sleep 15; done; exit 1
 COPY passports ./passports
 COPY evals ./evals
 COPY migrations ./migrations

@@ -1,26 +1,28 @@
-/* MORE TECH · графит, золото, слоновая кость. Тёмная навигация, светлое рабочее поле. */
+/* MORE TECH · брендбук (moretech-ontology/brand): айвори вместо белого, графит вместо чёрного, золото - акцент.
+   Синий и яркие цвета не используются; статусы ответа - приглушённые тёплые тона. */
 :root {
-  --ink: #141418;
-  --ink-2: #1f1f25;
-  --ink-3: #2b2b33;
-  --gold: #c9a26b;
-  --gold-2: #e3c48f;
-  --gold-deep: #9c7a45;
-  --ivory: #f8f4ee;
+  --ink: #232425;
+  --ink-2: #2e2f30;
+  --ink-3: #3a3b3c;
+  --gold: #bf9f72;
+  --gold-2: #d9c29e;
+  --gold-deep: #7d5f35;
+  --gold-big: #a5844f;
+  --ivory: #fcfaf7;
   --paper: #ffffff;
-  --line: #ebe4d8;
-  --text: #1d1d22;
-  --muted: #7d776d;
-  --ok: #1f8a5b;
-  --ok-bg: #e8f6ef;
-  --half: #b26a12;
-  --half-bg: #fff4e2;
-  --no: #b4433f;
-  --no-bg: #fdecea;
-  --ask: #4f5bd5;
-  --ask-bg: #eef0ff;
-  --mail: #7a56c9;
-  --mail-bg: #f3edff;
+  --line: #e6e0d6;
+  --text: #232425;
+  --muted: #5c5852;
+  --ok: #3f6e55;
+  --ok-bg: #eef3ee;
+  --half: #8a5a12;
+  --half-bg: #f7eedd;
+  --no: #9a3e35;
+  --no-bg: #f6e9e5;
+  --ask: #7d5f35;
+  --ask-bg: #f5f1eb;
+  --mail: #232425;
+  --mail-bg: #efece6;
   --r: 18px;
   --shadow: 0 1px 2px rgba(20, 20, 24, 0.04), 0 8px 28px rgba(20, 20, 24, 0.06);
   font-family:
@@ -86,10 +88,15 @@ h2,
   align-items: center;
   gap: 16px;
   padding: 12px 24px;
-  background: rgba(20, 20, 24, 0.92);
+  background: rgba(252, 250, 247, 0.92);
   backdrop-filter: blur(14px);
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.logo {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 .brand {
   display: flex;
@@ -99,18 +106,6 @@ h2,
   border: 0;
   padding: 0;
   text-align: left;
-}
-.monogram {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  font-weight: 800;
-  font-family: "Manrope", sans-serif;
-  color: var(--ink);
-  background: linear-gradient(135deg, var(--gold-2), var(--gold) 55%, var(--gold-deep));
-  box-shadow: 0 0 24px rgba(201, 162, 107, 0.35);
 }
 .brand-text {
   display: flex;
@@ -122,29 +117,30 @@ h2,
   font-size: 14px;
 }
 .brand-sub {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  color: var(--muted);
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
 }
 .switcher {
   display: flex;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f5f1eb;
+  border: 1px solid var(--line);
 }
 .switcher button {
   border: 0;
   background: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
   padding: 8px 18px;
   border-radius: 999px;
   font-weight: 500;
   transition: all 0.2s;
 }
 .switcher button.on {
-  background: #fff;
-  color: var(--ink);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  background: var(--ink);
+  color: #f7f5f1;
 }
 .topbar-right {
   justify-self: end;
@@ -153,15 +149,15 @@ h2,
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
   border-radius: 999px;
   padding: 4px 14px 4px 4px;
 }
 .who-change {
   font-size: 12px;
-  color: var(--gold-2);
+  color: var(--gold-deep);
 }
 .main {
   flex: 1;
@@ -191,9 +187,10 @@ h2,
   width: 42px;
   height: 42px;
   border-radius: 50%;
+  font-family: "Manrope", sans-serif;
   font-weight: 700;
-  color: var(--ink);
-  background: linear-gradient(135deg, #f4e6cf, var(--gold-2));
+  color: var(--gold);
+  background: var(--ink);
 }
 .avatar.sm {
   width: 30px;
@@ -202,12 +199,12 @@ h2,
 }
 .primary {
   border: 0;
-  border-radius: 12px;
-  padding: 11px 20px;
+  border-radius: 999px;
+  padding: 11px 22px;
   font-weight: 600;
-  color: var(--ink);
-  background: linear-gradient(135deg, var(--gold-2), var(--gold));
-  box-shadow: 0 6px 18px rgba(201, 162, 107, 0.35);
+  color: #f7f5f1;
+  background: var(--ink);
+  box-shadow: 0 6px 18px rgba(35, 36, 37, 0.18);
   transition:
     transform 0.15s,
     box-shadow 0.15s;
@@ -280,7 +277,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(201, 162, 107, 0.18);
+  box-shadow: 0 0 0 4px rgba(191, 159, 114, 0.18);
 }
 .eyebrow {
   display: inline-block;
@@ -288,7 +285,7 @@ textarea:focus {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold-2);
+  color: var(--gold-deep);
 }
 .eyebrow.dark {
   color: var(--gold-deep);
@@ -318,17 +315,13 @@ textarea:focus {
   margin: 16px 0 18px;
   font-weight: 800;
 }
-.hero h1 em {
-  font-style: normal;
-  background: linear-gradient(90deg, var(--gold-2), var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.hero h1 .accent {
+  color: var(--gold-big);
 }
 .hero-lead {
   font-size: 18px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+  color: var(--muted);
   max-width: 560px;
 }
 .promises {
@@ -342,16 +335,16 @@ textarea:focus {
   column-gap: 14px;
   align-items: start;
   padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
 }
 .promise b {
   font-weight: 600;
 }
 .promise span:last-child {
   grid-column: 2;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--muted);
   font-size: 14px;
   margin-top: 2px;
 }
@@ -362,17 +355,19 @@ textarea:focus {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(201, 162, 107, 0.16);
-  color: var(--gold-2);
-  font-weight: 800;
-  font-size: 18px;
+  background: #f5f1eb;
+  color: var(--gold-deep);
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
 }
 .hero-panel {
   padding: 28px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  background: var(--paper);
+  border: 1px solid var(--line);
   color: var(--text);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 60px rgba(35, 36, 37, 0.08);
 }
 .panel-title {
   font-size: 22px;
@@ -532,7 +527,7 @@ textarea:focus {
   background: var(--no);
 }
 .t-doc::before {
-  background: var(--mail);
+  background: var(--ink);
 }
 .t-muted::before {
   background: #bdb7ad;
@@ -606,21 +601,21 @@ textarea:focus {
   flex: none;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
   background: var(--ink);
-  color: var(--gold-2);
-  font-family: "Manrope", sans-serif;
-  font-weight: 800;
-  font-size: 12px;
+}
+.bot-mark img {
+  width: 22px;
+  height: auto;
 }
 .bot-mark.pulse {
   animation: pulse 1.2s ease-in-out infinite;
 }
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 8px rgba(201, 162, 107, 0.18);
+    box-shadow: 0 0 0 8px rgba(191, 159, 114, 0.2);
   }
 }
 .bubble.employee {
@@ -686,12 +681,12 @@ textarea:focus {
   flex: none;
   width: 46px;
   height: 46px;
-  border-radius: 14px;
+  border-radius: 999px;
   border: 0;
   font-size: 20px;
   font-weight: 700;
-  color: var(--ink);
-  background: linear-gradient(135deg, var(--gold-2), var(--gold));
+  color: #f7f5f1;
+  background: var(--ink);
 }
 .send:disabled {
   background: #eee8de;
@@ -799,7 +794,7 @@ textarea:focus {
   border-left: 3px solid var(--gold);
 }
 .claim.quality {
-  border-left-color: var(--mail);
+  border-left-color: var(--gold-deep);
 }
 .claim-text {
   line-height: 1.5;
@@ -865,8 +860,9 @@ blockquote::after {
   margin-top: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: var(--mail-bg);
-  color: #4c3486;
+  background: #f5f1eb;
+  border: 1px solid var(--line);
+  color: var(--ink);
   font-size: 14px;
 }
 .missing ul {
@@ -886,14 +882,14 @@ blockquote::after {
   padding: 10px 14px;
   border-radius: 12px;
   background: var(--mail-bg);
-  color: #4c3486;
+  color: var(--ink);
   font-size: 14px;
 }
 .ticket-code {
   padding: 3px 9px;
   border-radius: 8px;
-  background: var(--mail);
-  color: #fff;
+  background: var(--ink);
+  color: var(--gold);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.04em;
@@ -917,9 +913,9 @@ blockquote::after {
   color: #fff;
 }
 .option.accent {
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--gold-2), var(--gold));
-  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #f7f5f1;
   font-weight: 600;
 }
 .option:disabled {
@@ -1086,7 +1082,7 @@ blockquote::after {
 .bar div {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  background: var(--gold);
 }
 table {
   width: 100%;
@@ -1151,8 +1147,8 @@ td {
   border: 1px solid #f0ebe2;
 }
 .letter.in {
-  background: var(--mail-bg);
-  border-color: #e2d6fb;
+  background: #f5f1eb;
+  border-color: var(--line);
   margin-left: 40px;
 }
 .letter header {

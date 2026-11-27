@@ -36,7 +36,7 @@ export function Login({ meta, onLogin }: Props) {
       <div className="hero-copy">
         <span className="eyebrow">ИИ-агент · {meta.company}</span>
         <h1>
-          Ответы по регламентам. <em>Без выдумок.</em>
+          Ответы по регламентам. <span className="accent">Без выдумок.</span>
         </h1>
         <p className="hero-lead">
           Спросите своими словами - агент найдёт пункт регламента, покажет цитату и честно скажет, если ответа
@@ -65,7 +65,7 @@ export function Login({ meta, onLogin }: Props) {
                 <span className="profile-pos">{p.position}</span>
               </span>
               <span className={p.department ? "tag" : "tag ghost-tag"}>{depName(p.department)}</span>
-              <span className="arrow">→</span>
+              <span className="arrow">↗</span>
             </button>
           ))}
         </div>
