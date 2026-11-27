@@ -129,15 +129,31 @@ def test_same_across_departments_is_rechecked_by_numbers() -> None:
     )
     answer = {
         "variants": [
-            {"department_id": "a", "status": "answered", "claims": [
-                {"text": "РП назначают за 1 рабочий день.", "source_id": "a:1",
-                 "quote": "назначается в течение 1 рабочего дня после запроса"}]},
-            {"department_id": "b", "status": "answered", "claims": [
-                {"text": "РП назначают не позднее 12 рабочих часов.", "source_id": "b:1",
-                 "quote": "назначается не позднее 12 рабочих часов с момента запроса"}]},
+            {
+                "department_id": "a",
+                "status": "answered",
+                "claims": [
+                    {
+                        "text": "РП назначают за 1 рабочий день.",
+                        "source_id": "a:1",
+                        "quote": "назначается в течение 1 рабочего дня после запроса",
+                    }
+                ],
+            },
+            {
+                "department_id": "b",
+                "status": "answered",
+                "claims": [
+                    {
+                        "text": "РП назначают не позднее 12 рабочих часов.",
+                        "source_id": "b:1",
+                        "quote": "назначается не позднее 12 рабочих часов с момента запроса",
+                    }
+                ],
+            },
         ],
         "same_across_departments": True,
-    }  # fmt: skip
+    }
     out = run(lambda _u: answer, inp)
     assert out.same_across_departments is False
 

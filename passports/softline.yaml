@@ -47,11 +47,15 @@ documents:
     title: Проектная деятельность ДБРЦТ
     department: dbrct
     processes: [presale, project]
+    # Разделы 1-6 - пресейл (до КП), 7-23 - проект (инициация и далее)
+    sections: {presale: "1-6", project: "7-99"}
   - file: Организация проектной деятельности Тех дирекции.docx
     id: tech-project
     title: Организация проектной деятельности Технической дирекции
     department: tech
     processes: [presale, project]
+    # Разделы 1-6 - пресейл (до отправки ТКП), 7-24 - договор и реализация
+    sections: {presale: "1-6", project: "7-99"}
   - file: Пресейловая деятельность Дирекции ИБ.docx
     id: ib-presale
     title: Пресейловая деятельность Дирекции ИБ

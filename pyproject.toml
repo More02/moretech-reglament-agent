@@ -16,7 +16,7 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "sqlalchemy>=2.0",
     "psycopg[binary]>=3.2",
-    "pgvector>=0.3",
+    "numpy>=1.26",
     "alembic>=1.13",
     "pymorphy3>=2.0",
     "rank-bm25>=0.2.2",
@@ -75,7 +75,8 @@ ignore = [
 max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S", "PTH", "C90"]
+"**/tests/**" = ["S", "PTH", "C90", "E501"]
+"tests/**" = ["S", "PTH", "C90", "E501"]
 "evals/**" = ["S311"]
 
 [tool.mypy]
@@ -86,7 +87,7 @@ mypy_path = "src:sdk/src:libs/reg_parse/src:libs/evidence/src:libs/ru_text/src:l
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = ["pymorphy3.*", "natasha.*", "docx.*", "rank_bm25.*", "sentence_transformers.*", "pgvector.*", "imap_tools.*"]
+module = ["pymorphy3.*", "natasha.*", "docx.*", "rank_bm25.*", "sentence_transformers.*", "imap_tools.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
