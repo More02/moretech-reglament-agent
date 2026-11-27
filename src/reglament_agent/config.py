@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # Цены официального провайдера (Alibaba Cloud) для расчёта стоимости, $ за 1 млн токенов
     llm_price_input_usd_per_m: float = 0.375
     llm_price_output_usd_per_m: float = 2.25
-    usd_rub: float = 82.0
+    usd_rub: float = 82.313  # курс ЦБ РФ на 26.11.2026
     llm_daily_budget_rub: float = 500.0
     # Независимый проверяющий (строгий режим и оценка качества) - более крупная открытая модель
     judge_model: str = "qwen3.5-122b-a10b"

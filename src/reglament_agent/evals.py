@@ -18,7 +18,7 @@ from reglament_agent.adapters.mail import MemoryMailbox
 from reglament_agent.config import ROOT, Settings
 from reglament_agent.container import Container, build_container
 from reglament_agent.domain import AgentReply, Profile, ReplyKind
-from skill_sdk import SkillContext
+from skill_sdk import LLMError, SkillContext
 
 log = logging.getLogger(__name__)
 CASES = ROOT / "evals" / "questions.yaml"
@@ -108,7 +108,14 @@ def _judge(c: Container, case: CaseResult, reply_claims: list[tuple[str, str]]) 
             claims.append(ClaimToCheck(id=str(i), text=text, source_text=unit.text))
     if not claims:
         return
-    out = AnswerVerify().run(VerifyInput(question=case.question, claims=claims), SkillContext(llm=c.agent.judge_llm))
+    try:
+        out = AnswerVerify().run(
+            VerifyInput(question=case.question, claims=claims), SkillContext(llm=c.agent.judge_llm)
+        )
+    except LLMError as exc:
+        # Сбой проверяющего не должен обрывать прогон: случай помечается, метрика считается по остальным.
+        case.judge_comments = [f"проверяющий не ответил: {str(exc)[:120]}"]
+        return
     case.judge_checked = len(claims)
     case.judge_failed = sorted(out.failed_ids())
     texts = {cl.id: cl.text for cl in claims}
