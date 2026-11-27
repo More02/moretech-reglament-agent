@@ -99,6 +99,7 @@ def full_sentence(quote: str, text: str) -> str:
 
 _TEXT_CONDITION = re.compile(r"(?:\s|^|\()(?:и при|при наличии|при условии|за исключением|кроме|исключени\w*)\b")
 MIN_COVERAGE = 0.34
+MAX_GENERIC_QUOTE = 45
 
 
 def dropped_condition(claim: str, quote: str) -> str | None:
@@ -138,9 +139,10 @@ def foreign_line(claim: str, quote: str, text: str) -> bool:
     homes = [i for i, line in enumerate(lines) if all(f in line for f in fragments)]
     if not homes or 0 in homes:
         return False
-    # Цитата - большая часть строки: предмет утверждения взят из неё же.
+    # Проверяем только короткие общие фрагменты («не реже одного раза в неделю»): длинная цитата сама несёт
+    # предмет правила, а сокращения в ней (ПА = пресейл-архитектор) лемматизатор не сопоставит.
     quoted = sum(len(f) for f in fragments)
-    if any(quoted >= 0.5 * len(lines[i]) for i in homes):
+    if quoted >= MAX_GENERIC_QUOTE or any(quoted >= 0.5 * len(lines[i]) for i in homes):
         return False
     from evidence.verify import TIME_WORDS
 
