@@ -54,7 +54,9 @@ export function Cabinet({ meta }: { meta: Meta | null }) {
     );
   }, []);
 
-  useEffect(load, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (error)
     return (
@@ -237,15 +239,18 @@ export function Cabinet({ meta }: { meta: Meta | null }) {
           <h2>Покрытие регламентов</h2>
           <table>
             <tbody>
-              {data.coverage.slice(0, 10).map((c) => (
-                <tr key={c.document + c.section}>
-                  <td>
-                    {c.section}
-                    <div className="muted">{c.document}</div>
-                  </td>
-                  <td className="num">{c.citations}</td>
-                </tr>
-              ))}
+              {data.coverage
+                .filter((c) => c.citations > 0)
+                .slice(0, 10)
+                .map((c) => (
+                  <tr key={c.document + c.section}>
+                    <td>
+                      {c.section}
+                      <div className="muted">{c.document}</div>
+                    </td>
+                    <td className="num">{c.citations}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

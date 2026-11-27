@@ -31,7 +31,10 @@ export function Chat({ meta, profile }: Props) {
     );
   }, [profile]);
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: "smooth" }), [items, busy]);
+  useEffect(() => {
+    // В новых браузерах scrollIntoView возвращает Promise - его нельзя отдавать React как функцию очистки
+    void bottom.current?.scrollIntoView({ behavior: "smooth" });
+  }, [items, busy]);
 
   const push = useCallback((reply: AgentReply) => {
     if (reply.turn_id) lastTurn.current = Math.max(lastTurn.current, reply.turn_id);

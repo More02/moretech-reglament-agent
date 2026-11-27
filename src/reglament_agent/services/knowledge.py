@@ -71,7 +71,7 @@ class KnowledgeBase:
                     s.add(
                         DocumentRow(
                             id=meta.id,
-                            title=parsed.title,
+                            title=meta.title,
                             department=meta.department,
                             source=meta.file,
                             fingerprint=parsed.fingerprint,
@@ -80,7 +80,7 @@ class KnowledgeBase:
                 row = s.get(DocumentRow, meta.id)
                 if row is None:
                     raise RuntimeError("нарушен инвариант: row отсутствует")
-                row.title, row.fingerprint, row.updated_at = parsed.title, parsed.fingerprint, utcnow()
+                row.title, row.fingerprint, row.updated_at = meta.title, parsed.fingerprint, utcnow()
                 s.flush()
                 new_ids = {c.clause_id for c in parsed.clauses}
                 texts = [self._search_text(meta, parsed.title, c.number, c.path, c.text) for c in parsed.clauses]
