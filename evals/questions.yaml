@@ -46,7 +46,7 @@ cases:
   - {id: A33, department: ib, q: "Сколько закладывать в маржу при бюджетировании на следующий год?", expect: answer, clauses: {ib: [ib-presale:13.8]}}
   - {id: A34, department: dbrct, q: "При каких условиях формируют команду проекта?", expect: answer, clauses: {dbrct: [dbrct-project:7.1.1]}}
   - {id: A35, department: ib, q: "Можно отправить клиенту гарантийное письмо без согласования с РП?", expect: answer, clauses: {ib: [ib-project:29.2]}}
-  - {id: A36, department: ib, q: "Когда расчёт проекта считается устаревшим?", expect: answer, clauses: {ib: [ib-presale:8.3, ib-presale:13.13, ib-presale:8.2]}}
+  - {id: A36, department: ib, q: "Когда расчёт проекта считается устаревшим?", expect: answer, clauses: {ib: [ib-presale:8.3, ib-presale:13.13, ib-presale:8.2, ib-project:3.2]}}
   - {id: A37, department: tech, q: "Что делать TPS, если сроки проекта нереалистичные?", expect: answer, clauses: {tech: [tech-project:2.9]}}
   - {id: A38, department: ib, q: "Сколько ждут ответа от SS по неполной карточке проекта, прежде чем её отклонят?", expect: answer, clauses: {ib: [ib-project:2.3]}}
   - {id: A39, department: dbrct, q: "Когда обязательно проводить внутреннее установочное совещание?", expect: answer, clauses: {dbrct: [dbrct-project:11.1]}}
