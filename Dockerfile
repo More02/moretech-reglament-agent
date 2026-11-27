@@ -18,10 +18,10 @@ WORKDIR /app
 # Сеть до зеркал пакетов бывает нестабильной: большие колёса (torch ~200 МБ) скачиваем с повторами
 ENV UV_HTTP_TIMEOUT=600
 # Колесо torch (~200 МБ) качаем curl с докачкой: загрузка через менеджер пакетов рвётся на сети сервера в РФ
-ARG TORCH_WHEEL=https://download.pytorch.org/whl/cpu/torch-2.5.1%2Bcpu-cp312-cp312-linux_x86_64.whl
+ARG TORCH_WHEEL=https://download.pytorch.org/whl/cpu/torch-2.15.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends curl >/dev/null && rm -rf /var/lib/apt/lists/* \
- && curl -fL --retry 20 --retry-all-errors --retry-delay 5 -C - -o /tmp/torch-2.5.1+cpu-cp312-cp312-linux_x86_64.whl "$TORCH_WHEEL" \
- && for i in 1 2 3 4 5; do uv pip install --quiet /tmp/torch-2.5.1+cpu-cp312-cp312-linux_x86_64.whl && break; sleep 10; done \
+ && curl -fL --retry 20 --retry-all-errors --retry-delay 5 -C - -o /tmp/torch-2.15.0+cpu-cp312-cp312-manylinux_2_28_x86_64.whl "$TORCH_WHEEL" \
+ && for i in 1 2 3 4 5; do uv pip install --quiet /tmp/torch-2.15.0+cpu-cp312-cp312-manylinux_2_28_x86_64.whl && break; sleep 10; done \
  && rm -f /tmp/torch-*.whl && python -c "import torch"
 COPY pyproject.toml README.md ./
 COPY src ./src
