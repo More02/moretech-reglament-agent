@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import logging
 import sys
 from dataclasses import asdict
@@ -14,7 +15,10 @@ from reglament_agent.config import get_settings
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="reglament", description="Агент ответов по регламентам MORE TECH")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("ingest", help="Загрузить регламенты из REGULATIONS_DIR и пересобрать индекс")
+    ingest = sub.add_parser("ingest", help="Загрузить регламенты из REGULATIONS_DIR и пересобрать индекс")
+    ingest.add_argument(
+        "--exit", action="store_true", help="Завершить процесс сразу после отчёта (фоновые потоки загрузчика модели)"
+    )
     serve = sub.add_parser("serve", help="Запустить HTTP API и интерфейс")
     serve.add_argument("--host", default="0.0.0.0")  # noqa: S104 - сервер в контейнере
     serve.add_argument("--port", type=int, default=8000)
@@ -57,7 +61,11 @@ def main(argv: list[str] | None = None) -> int:
         else:
             documents = container.kb.parse_directory(settings.regulations_dir)
         report = container.kb.ingest(documents)
-        print(json.dumps(asdict(report), ensure_ascii=False, indent=1))
+        print(json.dumps(asdict(report), ensure_ascii=False, indent=1), flush=True)
+        if args.exit:
+            # При запуске контейнера: фоновые потоки загрузчика модели эмбеддингов не дают процессу завершиться,
+            # а сервер стартует только после загрузки регламентов. Работа сделана и записана в базу.
+            os._exit(0)
     elif args.cmd == "mail-poll":
         print(container.mail.poll())
     elif args.cmd == "gardener":
