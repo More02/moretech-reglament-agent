@@ -33,15 +33,18 @@ class Analytics:
         outcomes = Counter(t.outcome for t in agent)
         answered = [t for t in agent if t.outcome == "answer"]
         rated = [t.rating for t in agent if t.rating is not None]
+        # Итог вопроса - по всем ответам агента до следующего вопроса: уточнение + выбор = один вопрос с ответом.
+        q_answered = sum(1 for q in questions if "answer" in q["outcomes"])
+        q_total = len(questions)
         return {
             "period_days": days,
             "totals": {
-                "questions": len(agent),
-                "answered": outcomes.get("answer", 0),
-                "clarified": outcomes.get("clarify", 0),
-                "not_found": sum(outcomes.get(k, 0) for k in UNANSWERED),
-                "out_of_scope": outcomes.get("out_of_scope", 0) + outcomes.get("off_task", 0),
-                "answer_rate": round(outcomes.get("answer", 0) / len(agent), 3) if agent else 0.0,
+                "questions": q_total,
+                "answered": q_answered,
+                "clarified": sum(1 for q in questions if "clarify" in q["outcomes"]),
+                "not_found": sum(1 for q in questions if q["outcome"] in UNANSWERED),
+                "out_of_scope": sum(1 for q in questions if q["outcome"] in {"out_of_scope", "off_task"}),
+                "answer_rate": round(q_answered / q_total, 3) if q_total else 0.0,
                 "avg_latency_ms": int(sum(t.latency_ms for t in answered) / len(answered)) if answered else 0,
                 "avg_cost_rub": round(sum(t.cost_rub for t in agent) / len(agent), 4) if agent else 0.0,
                 "total_cost_rub": round(sum(t.cost_rub for t in agent), 2),
@@ -50,7 +53,11 @@ class Analytics:
             "outcomes": dict(outcomes),
             "by_department": self._by_department(agent),
             "coverage": self._coverage(agent, clauses, titles),
-            "unanswered": [q for q in questions if q["outcome"] in UNANSWERED][-50:],
+            "unanswered": [
+                {k: q[k] for k in ("text", "outcome", "at", "departments")}
+                for q in questions
+                if q["outcome"] in UNANSWERED
+            ][-50:],
             "tickets": {
                 "open": sum(1 for t in tickets if t.status == "sent"),
                 "answered": sum(1 for t in tickets if t.status == "answered"),
@@ -80,17 +87,33 @@ class Analytics:
 
     @staticmethod
     def _questions(turns: list[TurnRow]) -> list[dict[str, Any]]:
+        """Вопросы сотрудников с итогом. Нажатия кнопок (выбор подразделения, отправка в службу качества) -
+        продолжение того же вопроса, а не новые вопросы."""
         out: list[dict[str, Any]] = []
-        last_q: dict[str, TurnRow] = {}
+        current: dict[str, dict[str, Any]] = {}
         for t in turns:
-            if t.role == "employee":
-                last_q[t.conversation_id] = t
-            elif t.outcome and t.conversation_id in last_q:
-                q = last_q[t.conversation_id]
-                out.append(
-                    {"text": q.text, "outcome": t.outcome, "at": t.created_at.isoformat(), "departments": t.departments}
-                )
-        return out
+            if t.role == "employee" and t.outcome != "choice":
+                item: dict[str, Any] = {
+                    "text": t.text,
+                    "outcome": "",
+                    "outcomes": [],
+                    "at": t.created_at.isoformat(),
+                    "departments": [],
+                }
+                current[t.conversation_id] = item
+                out.append(item)
+            elif t.role == "agent" and t.outcome and t.outcome != "quality_reply" and t.conversation_id in current:
+                cur = current[t.conversation_id]
+                cur["outcomes"].append(t.outcome)
+                cur["outcome"] = t.outcome
+                cur["departments"] = list(t.departments)
+        # Вопрос, на который так и не ответили, - даже если потом его отправили в службу качества
+        for q in out:
+            if "answer" in q["outcomes"]:
+                q["outcome"] = "answer"
+            elif "escalation_sent" in q["outcomes"] or "not_found" in q["outcomes"]:
+                q["outcome"] = "not_found"
+        return [q for q in out if q["outcomes"]]
 
     def _by_department(self, agent: list[TurnRow]) -> list[dict[str, Any]]:
         counts: Counter[str] = Counter(d for t in agent for d in set(t.departments))

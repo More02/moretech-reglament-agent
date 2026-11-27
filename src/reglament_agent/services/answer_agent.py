@@ -113,9 +113,10 @@ class AnswerAgent:
 
     def ask(self, conversation_id: str, text: str) -> AgentReply:
         tc = self._load(conversation_id)
-        self._save_turn(tc, "employee", text)
+        pending_choice = self._match_pending_choice(tc, text)
+        # Ответ текстом на кнопки уточнения («ДБРЦТ») - не новый вопрос: аналитика считает его выбором.
+        self._save_turn(tc, "employee", text, outcome="choice" if pending_choice else "")
         try:
-            pending_choice = self._match_pending_choice(tc, text)
             reply = self._choose(tc, pending_choice) if pending_choice else self._answer_question(tc, text)
         except LLMError as exc:
             log.exception("ошибка модели")
@@ -128,7 +129,7 @@ class AnswerAgent:
     def choose(self, conversation_id: str, option_id: str) -> AgentReply:
         tc = self._load(conversation_id)
         label = next((o.label for o in self._last_options(tc) if o.id == option_id), option_id)
-        self._save_turn(tc, "employee", label)
+        self._save_turn(tc, "employee", label, outcome="choice")
         try:
             reply = self._choose(tc, option_id)
         except LLMError as exc:
@@ -593,9 +594,9 @@ class AnswerAgent:
     def _last_options(self, tc: TurnContext) -> list[Option]:
         return [Option.model_validate(o) for o in tc.state.get("last_options", [])]
 
-    def _save_turn(self, tc: TurnContext, role: str, text: str) -> None:
+    def _save_turn(self, tc: TurnContext, role: str, text: str, outcome: str = "") -> None:
         with self.sessions.begin() as s:
-            s.add(TurnRow(conversation_id=tc.conversation_id, role=role, text=text, outcome=""))
+            s.add(TurnRow(conversation_id=tc.conversation_id, role=role, text=text, outcome=outcome))
         tc.history.append(Turn(role=role, text=text))
 
     def _finish(self, tc: TurnContext, reply: AgentReply) -> AgentReply:

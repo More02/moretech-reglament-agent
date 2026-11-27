@@ -27,7 +27,9 @@ def test_chat_flow_and_document_anchor(app: tuple[Container, MemoryMailbox]) -> 
         assert 'id="2.1"' in doc
         assert http.post(f"/api/turns/{r2['turn_id']}/rating", json={"rating": 1}).json() == {"status": "ok"}
         stats = http.get("/api/admin/analytics").json()
-        assert stats["totals"]["questions"] == 2
+        # уточнение и выбор подразделения - один вопрос, и он с ответом
+        assert stats["totals"]["questions"] == 1
+        assert stats["totals"]["answered"] == 1
 
 
 def test_webhook_channel_keeps_dialog(app: tuple[Container, MemoryMailbox]) -> None:

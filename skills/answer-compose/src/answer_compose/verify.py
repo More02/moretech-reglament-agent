@@ -118,6 +118,8 @@ def _restatus_facts(variant: Variant, kept: list[Claim], *, dropped: int) -> Var
         status = Status.PARTIAL
     if dropped and not gap:
         gap = "часть ответа модели не подтвердилась дословной цитатой регламента и скрыта"
+    if status is Status.PARTIAL and not gap:
+        gap = "регламент отвечает на вопрос не полностью - уточните недостающее в службе качества"
     lead = variant.lead if _lead_supported(variant.lead, kept) else ""
     # Короткая фраза-ответ не должна терять исключение правила («нельзя» вместо «нельзя, кроме RFI»).
     if lead and any(dropped_condition(lead, c.quote) for c in kept):

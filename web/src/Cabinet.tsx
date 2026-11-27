@@ -104,7 +104,7 @@ export function Cabinet({ meta }: { meta: Meta | null }) {
       </div>
       <nav className="subtabs">
         {TABS.map(([id, label]) => (
-          <button key={id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>
+          <button key={id} className={tab === id ? "on" : ""} onClick={() => (setTab(id), load())}>
             {label}
             {id === "mail" && data.tickets.open > 0 && <span className="badge">{data.tickets.open}</span>}
           </button>
