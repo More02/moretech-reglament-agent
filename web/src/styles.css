@@ -294,9 +294,9 @@ textarea:focus {
 /* ---------- вход ---------- */
 .hero-main {
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(201, 162, 107, 0.22), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(122, 86, 201, 0.18), transparent 60%), var(--ink);
-  color: #fff;
+    radial-gradient(1100px 520px at 90% -10%, rgba(191, 159, 114, 0.16), transparent 60%),
+    linear-gradient(180deg, var(--ivory), #f5f1eb);
+  color: var(--ink);
 }
 .hero {
   position: relative;
