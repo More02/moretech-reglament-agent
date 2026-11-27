@@ -64,6 +64,11 @@ def _run_case(c: Container, case: dict[str, Any]) -> CaseResult:
     first_kind = reply.kind.value
     total_cost, total_calls = reply.usage.cost_rub, reply.usage.llm_calls
     behavior_ok = reply.kind.value == expect or reply.kind.value in case.get("also_ok", [])
+    partial = reply.kind.value == "answer" and any(v.status == "partial" and v.gap for v in reply.variants)
+    if expect == "partial":
+        # Неполный ответ: часть - с цитатой, недостающая часть названа явно, а не пропущена молча
+        behavior_ok = partial
+        first_kind = "partial" if partial else reply.kind.value
     citation_ok: bool | None = None
     note = ""
     if expect == "clarify" and behavior_ok:
@@ -78,9 +83,11 @@ def _run_case(c: Container, case: dict[str, Any]) -> CaseResult:
             total_calls += follow.usage.llm_calls
             citation_ok = _citation_ok(follow, {case["choose"]: case["clauses"][case["choose"]]})
             reply = follow
-    elif expect == "answer" and case.get("clauses"):
+    elif expect in ("answer", "partial") and case.get("clauses"):
         citation_ok = behavior_ok and _citation_ok(reply, case["clauses"])
-    false_answer = expect in ("not_found", "out_of_scope", "off_task") and reply.kind in ANSWER_KINDS
+    false_answer = (expect in ("not_found", "out_of_scope", "off_task") and reply.kind in ANSWER_KINDS) or (
+        expect == "partial" and reply.kind.value == "answer" and not partial
+    )
     missing_ok = bool(reply.missing_documents) if case.get("missing") else None
     return CaseResult(
         id=case["id"],
@@ -128,8 +135,8 @@ def _summary(results: list[CaseResult], seconds: float) -> dict[str, Any]:
     def share(values: list[bool]) -> float | None:
         return round(sum(values) / len(values), 3) if values else None
 
-    answered = [r for r in results if r.expect in ("answer", "clarify")]
-    refusals = [r for r in results if r.expect in ("not_found", "out_of_scope", "off_task")]
+    answered = [r for r in results if r.expect in ("answer", "clarify", "partial")]
+    refusals = [r for r in results if r.expect in ("not_found", "out_of_scope", "off_task", "partial")]
     latencies = [r.latency_ms for r in results if r.llm_calls]
     by_cat: dict[str, list[CaseResult]] = {}
     for r in results:
@@ -143,6 +150,7 @@ def _summary(results: list[CaseResult], seconds: float) -> dict[str, Any]:
             [r.got in {k.value for k in SAFE_REFUSALS} for r in results if r.expect == "not_found"]
         ),
         "clarify_recall": share([r.got == "clarify" for r in results if r.expect == "clarify"]),
+        "partial_honesty": share([r.behavior_ok for r in results if r.expect == "partial"]),
         "missing_docs_flagged": share([bool(r.missing_ok) for r in results if r.missing_ok is not None]),
         "judge_claims_checked": sum(r.judge_checked for r in results),
         "judge_distortions": sum(len(r.judge_failed) for r in results),
