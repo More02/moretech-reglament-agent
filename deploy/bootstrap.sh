@@ -27,7 +27,7 @@ say() { echo "[$(date +%H:%M:%S)] $*"; }
 say "1/6 Пакеты: git, docker"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq git curl ca-certificates docker.io docker-compose-v2 >/dev/null
+apt-get install -y -qq git curl ca-certificates docker.io docker-compose-v2 docker-buildx >/dev/null
 # Docker Hub из РФ отвечает нестабильно - образы берём через зеркала
 mkdir -p /etc/docker
 if [ ! -f /etc/docker/daemon.json ]; then
