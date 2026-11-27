@@ -19,7 +19,8 @@ services:
       - models:/models
       # Кэш векторов эмбеддингов - на диске сервера, переживает пересборку
       - ../data/cache:/app/data/cache
-      - eval-reports:/app/evals/reports
+      # Отчёт прогона тестового набора - его показывает кабинет службы качества
+      - ../evals/reports:/app/evals/reports
     depends_on:
       db:
         condition: service_healthy
@@ -75,4 +76,3 @@ volumes:
   pgdata:
   models:
   caddy-data:
-  eval-reports:

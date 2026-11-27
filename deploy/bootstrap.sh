@@ -54,7 +54,7 @@ if [ -f "$BUNDLE" ]; then
   say "  распакован $BUNDLE"
 fi
 [ -f .env ] || { say "Нет .env - положите его в $DIR и запустите скрипт ещё раз"; exit 1; }
-chown -R 10001:10001 data/cache
+mkdir -p evals/reports && chown -R 10001:10001 data/cache evals/reports
 
 say "4/6 Адрес стенда"
 IP="$(curl -fsS https://api.ipify.org || hostname -I | awk '{print $1}')"
