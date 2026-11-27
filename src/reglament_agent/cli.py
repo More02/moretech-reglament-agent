@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import sys
+from dataclasses import asdict
 
 from reglament_agent.config import get_settings
 
@@ -56,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             documents = container.kb.parse_directory(settings.regulations_dir)
         report = container.kb.ingest(documents)
-        print(json.dumps(report.__dict__, ensure_ascii=False, indent=1))
+        print(json.dumps(asdict(report), ensure_ascii=False, indent=1))
     elif args.cmd == "mail-poll":
         print(container.mail.poll())
     elif args.cmd == "gardener":
