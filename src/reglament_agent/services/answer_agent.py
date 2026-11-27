@@ -344,7 +344,10 @@ class AnswerAgent:
                 "(регламент может быть на актуализации)."
             )
         if partial:
-            text += "\nЧасть вопроса в регламентах не описана - могу отправить её в службу качества."
+            text += (
+                "\nПолного ответа в регламентах нет: ниже только то, что в них прямо написано, а чего нет - отмечено "
+                "отдельно. Додумывать не буду - недостающую часть могу отправить в службу качества."
+            )
         tc.state["clarifications"] = 0
         return AgentReply(
             kind=ReplyKind.ANSWER, text=text.strip(), variants=views, options=options, missing_documents=missing

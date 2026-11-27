@@ -213,3 +213,55 @@ def test_lost_condition_asks_model_again_with_feedback() -> None:
     claim = out.variants[0].claims[0]
     assert "Заказа покупателя" in claim.text
     assert claim.quote == claim.text
+
+
+def _absence(user: str) -> dict[str, Any]:
+    del user
+    return {
+        "variants": [
+            {
+                "department_id": "ib",
+                "status": "answered",
+                "lead": "После договора. Порядок выбора не регламентирован.",
+                "claims": [
+                    {
+                        "text": "Привлечь можно после подписания договора и при наличии Заказа покупателя.",
+                        "source_id": "ib-project:4.1",
+                        "quote": SUB.sources[0].text,
+                    },
+                    {
+                        "text": "Регламент не содержит требований к выбору субподрядчика.",
+                        "source_id": "ib-project:4.1",
+                        "quote": HALF,
+                    },
+                ],
+            }
+        ],
+        "same_across_departments": False,
+        "conflict": None,
+        "missing_documents": [],
+    }
+
+
+def test_absence_statement_becomes_gap_not_fact() -> None:
+    llm = FakeLLM({"answer-compose/compose": _absence})
+    out = AnswerCompose().run(
+        ComposeInput(question="Когда и как выбрать субподрядчика?", departments=[SUB]), SkillContext(llm=llm)
+    )
+    v = out.variants[0]
+    assert v.status.value == "partial"
+    assert len(v.claims) == 1
+    assert v.gap and "выбору субподрядчика" in v.gap
+    assert "не регламентирован" not in v.lead
+
+
+def test_lead_without_exception_is_dropped() -> None:
+    from answer_compose.models import Claim, Status, Variant
+    from answer_compose.verify import _restatus_facts
+
+    quote = "Бюджетная оценка не может использоваться для подачи в конкурс, за исключением случаев участия в RFI."
+    claim = Claim(text=quote, source_id="x:1", quote=quote)
+    v = Variant(department_id="d", status=Status.ANSWERED, lead="Подавать нельзя.", claims=[claim])
+    assert _restatus_facts(v, [claim], dropped=0).lead == ""
+    v2 = v.model_copy(update={"lead": "Нельзя, за исключением участия в RFI."})
+    assert _restatus_facts(v2, [claim], dropped=0).lead

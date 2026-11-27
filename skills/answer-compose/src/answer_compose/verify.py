@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from answer_compose.models import (
     Claim,
     ComposeInput,
@@ -68,7 +70,42 @@ def verify_composition(raw: Composition, inp: ComposeInput) -> VerifiedCompositi
     )
 
 
+# «Регламент не содержит…», «скидка не регламентирована» - это не факт из регламента, а признание пробела.
+# Такое утверждение нельзя показывать как правило с цитатой: оно уходит в «чего нет в регламенте», ответ - неполный.
+_ABSENCE = re.compile(
+    r"(?:регламент\w*|источник\w*|пункт\w*|документ\w*)\s+не\s+(?:содерж|указ|описыв|регламентир|предусматр|уточня|определя)"
+    r"|не\s+(?:регламентирован|указан|описан|определен|определён|предусмотрен|установлен)\w*"
+    r"|(?:нет|отсутству\w*)\s+(?:информаци|сведени|требовани|данных|указани)",
+    re.IGNORECASE,
+)
+
+
+def _is_absence(text: str) -> bool:
+    return bool(_ABSENCE.search(text))
+
+
+def _split_absence(variant: Variant, kept: list[Claim]) -> tuple[list[Claim], list[str]]:
+    facts = [c for c in kept if not _is_absence(c.text)]
+    gaps = [c.text for c in kept if _is_absence(c.text)]
+    sentences = re.split(r"(?<=[.!?])\s+", variant.lead.strip()) if variant.lead else []
+    gaps += [s for s in sentences if _is_absence(s)]
+    return facts, gaps
+
+
 def _restatus(variant: Variant, kept: list[Claim], *, dropped: int) -> Variant:
+    kept, gaps = _split_absence(variant, kept)
+    if gaps:
+        gap = "; ".join(dict.fromkeys(g.rstrip(".") for g in ([variant.gap] if variant.gap else []) + gaps))
+        lead = " ".join(s for s in re.split(r"(?<=[.!?])\s+", variant.lead.strip()) if s and not _is_absence(s))
+        variant = variant.model_copy(
+            update={"gap": gap, "lead": lead, "status": Status.PARTIAL if kept else Status.NOT_FOUND}
+        )
+        if kept:
+            return _restatus_facts(variant, kept, dropped=dropped)
+    return _restatus_facts(variant, kept, dropped=dropped)
+
+
+def _restatus_facts(variant: Variant, kept: list[Claim], *, dropped: int) -> Variant:
     if not kept:
         return Variant(
             department_id=variant.department_id,
@@ -79,6 +116,9 @@ def _restatus(variant: Variant, kept: list[Claim], *, dropped: int) -> Variant:
     if status is Status.NOT_FOUND or (dropped and status is Status.ANSWERED):
         status = Status.PARTIAL
     lead = variant.lead if _lead_supported(variant.lead, kept) else ""
+    # Короткая фраза-ответ не должна терять исключение правила («нельзя» вместо «нельзя, кроме RFI»).
+    if lead and any(dropped_condition(lead, c.quote) for c in kept):
+        lead = ""
     return variant.model_copy(update={"claims": kept, "status": status, "lead": lead})
 
 
