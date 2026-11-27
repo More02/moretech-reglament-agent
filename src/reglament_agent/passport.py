@@ -33,6 +33,7 @@ class DocumentDef(BaseModel):
     department: str
     processes: list[str]
     sections: dict[str, str] = Field(default_factory=dict, description="процесс → диапазон разделов «1-6»")
+    confluence_page_id: str | None = None
 
     def process_of(self, clause_number: str) -> str | None:
         """Стадия пункта по номеру раздела; если документ про одну стадию - она."""

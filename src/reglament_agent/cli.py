@@ -48,7 +48,14 @@ def main(argv: list[str] | None = None) -> int:
 
     container = build_container(settings)
     if args.cmd == "ingest":
-        report = container.kb.ingest(container.kb.parse_directory(settings.regulations_dir))
+        if settings.confluence_url:
+            from reglament_agent.adapters.confluence import ConfluenceSource
+
+            source = ConfluenceSource(settings.confluence_url, settings.confluence_token, settings.confluence_space)
+            documents = source.documents(container.passport)
+        else:
+            documents = container.kb.parse_directory(settings.regulations_dir)
+        report = container.kb.ingest(documents)
         print(json.dumps(report.__dict__, ensure_ascii=False, indent=1))
     elif args.cmd == "mail-poll":
         print(container.mail.poll())
