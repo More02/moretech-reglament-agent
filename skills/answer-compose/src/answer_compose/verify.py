@@ -15,6 +15,7 @@ from answer_compose.models import (
     VerifiedComposition,
 )
 from evidence import dropped_condition, full_sentence, lost_condition, numbers, texts_differ, verify_claim
+from ru_text import lemmas
 
 
 def _allowed_sources(inp: ComposeInput) -> dict[str, dict[str, str]]:
@@ -57,7 +58,9 @@ def verify_composition(raw: Composition, inp: ComposeInput) -> VerifiedCompositi
                 rejected.append(problem)
             else:
                 kept.append(claim)
-        variants.append(_restatus(variant, kept, dropped=len(variant.claims) - len(kept)))
+        variants.append(
+            _uncovered_parts(_restatus(variant, kept, dropped=len(variant.claims) - len(kept)), inp.question)
+        )
     answered = [v for v in variants if v.status is not Status.NOT_FOUND]
     same = raw.same_across_departments and _same_facts(answered)
     conflict = _valid_conflict(raw.conflict, allowed)
@@ -207,3 +210,34 @@ def _dropped_in_text(claim: Claim, siblings: list[Claim]) -> str | None:
         return None
     together = " ".join(c.text for c in siblings)
     return dropped_condition(together, claim.quote)
+
+
+# «Кто назначает РП и нужно ли согласовывать его с заказчиком?» - вторая часть начинается с вопросительного слова.
+_SECOND_PART = re.compile(
+    r"\s(?:и|а также|а)\s+(?=(?:нужно ли|надо ли|можно ли|должен ли|должна ли|обязан ли|кто|какой|какая|какие|какую|"
+    r"каким|сколько|когда|как|где|куда|в какой|в каком|в какие|чем)\b)",
+    re.IGNORECASE,
+)
+_MIN_PART_COVERAGE = 0.34
+
+
+def _uncovered_parts(variant: Variant, question: str) -> Variant:
+    """Часть составного вопроса, о которой нет ни слова в утверждениях, - это пробел, а не молчаливый пропуск.
+
+    Модель иногда отвечает только на первую часть и ставит «ответ найден»; код это видит по словам вопроса.
+    """
+    if variant.status is not Status.ANSWERED or not variant.claims:
+        return variant
+    parts = _SECOND_PART.split(question.strip().rstrip("?"))
+    if len(parts) < 2:
+        return variant
+    said = set(lemmas(" ".join(f"{c.text} {c.quote}" for c in variant.claims)))
+    missing = []
+    for part in parts[1:]:
+        words = {w for w in lemmas(part) if len(w) > 3}
+        if words and len(words & said) / len(words) < _MIN_PART_COVERAGE:
+            missing.append(part.strip())
+    if not missing:
+        return variant
+    gap = "в регламентах нет ответа на часть вопроса: " + "; ".join(f"«{m}»" for m in missing)
+    return variant.model_copy(update={"status": Status.PARTIAL, "gap": gap})
