@@ -35,7 +35,41 @@ export const api = {
     request<unknown>(`/api/admin/notes/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
   evalReport: () => request<EvalReport | Record<string, never>>("/api/admin/eval"),
   gardener: () => post<{ clusters: Cluster[]; notes_need_review: number }>("/api/admin/gardener", {}),
+  mail: () => request<MailBox>("/api/admin/mail"),
+  mailReply: (ticketCode: string, sender: string, body: string) =>
+    post<{ matched: number; published_notes: number[] }>("/api/admin/mail/reply", {
+      ticket_code: ticketCode,
+      sender,
+      body,
+    }),
 };
+
+export interface MailMessage {
+  direction: "in" | "out";
+  sender: string;
+  recipients: string[];
+  subject: string;
+  body: string;
+  classification: string;
+  at: string;
+}
+
+export interface MailThread {
+  code: string;
+  question: string;
+  status: string;
+  employee: string;
+  employee_email: string;
+  created_at: string;
+  messages: MailMessage[];
+}
+
+export interface MailBox {
+  demo: boolean;
+  agent_address: string;
+  quality_email: string;
+  threads: MailThread[];
+}
 
 export interface Cluster {
   title: string;

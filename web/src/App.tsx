@@ -5,10 +5,12 @@ import { Chat } from "./Chat";
 import { Login } from "./Login";
 import type { Meta, Profile } from "./types";
 
+type View = "chat" | "cabinet";
+
 export function App() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [view, setView] = useState<"chat" | "cabinet">(
+  const [view, setView] = useState<View>(
     window.location.pathname.startsWith("/cabinet") ? "cabinet" : "chat",
   );
   const [error, setError] = useState("");
@@ -17,7 +19,7 @@ export function App() {
     api.meta().then(setMeta, (e: Error) => setError(e.message));
   }, []);
 
-  const go = (next: "chat" | "cabinet") => {
+  const go = (next: View) => {
     setView(next);
     window.history.replaceState(null, "", next === "cabinet" ? "/cabinet" : "/");
   };
@@ -25,29 +27,33 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">
+        <button className="brand" onClick={() => go("chat")} aria-label="На главную">
           <span className="monogram">MT</span>
-          <div>
-            <div className="brand-name">MORE TECH</div>
-            <div className="brand-sub">Агент по регламентам{meta ? ` · ${meta.company}` : ""}</div>
-          </div>
-        </div>
-        <nav className="tabs">
-          <button className={view === "chat" ? "tab active" : "tab"} onClick={() => go("chat")}>
-            Чат сотрудника
+          <span className="brand-text">
+            <span className="brand-name">MORE TECH</span>
+            <span className="brand-sub">Агент по регламентам{meta ? ` · ${meta.company}` : ""}</span>
+          </span>
+        </button>
+        <nav className="switcher" aria-label="Раздел">
+          <button className={view === "chat" ? "on" : ""} onClick={() => go("chat")}>
+            Сотрудник
           </button>
-          <button className={view === "cabinet" ? "tab active" : "tab"} onClick={() => go("cabinet")}>
-            Кабинет службы качества
+          <button className={view === "cabinet" ? "on" : ""} onClick={() => go("cabinet")}>
+            Служба качества
           </button>
         </nav>
-        {profile && view === "chat" && (
-          <button className="ghost" onClick={() => setProfile(null)}>
-            {profile.name} · сменить
-          </button>
-        )}
+        <div className="topbar-right">
+          {profile && view === "chat" && (
+            <button className="who" onClick={() => setProfile(null)} title="Сменить профиль">
+              <span className="avatar sm">{profile.name.slice(0, 1)}</span>
+              <span>{profile.name}</span>
+              <span className="who-change">сменить</span>
+            </button>
+          )}
+        </div>
       </header>
       {error && <div className="banner error">{error}</div>}
-      <main>
+      <main className={view === "chat" && !profile ? "main hero-main" : "main"}>
         {view === "cabinet" ? (
           <Cabinet meta={meta} />
         ) : !meta ? (

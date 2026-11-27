@@ -90,4 +90,7 @@ class AgentReply(BaseModel):
     missing_documents: list[str] = Field(default_factory=list)
     ticket: TicketView | None = None
     usage: UsageView = Field(default_factory=UsageView)
+    # Сколько утверждений модели проверил код и сколько отбросил (нет цитаты, чужой пункт, число не из цитаты).
+    checked_claims: int = 0
+    rejected_claims: int = 0
     turn_id: int | None = None

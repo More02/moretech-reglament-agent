@@ -66,6 +66,9 @@ class TurnContext:
     history: list[Turn]
     skill_ctx: SkillContext
     started: float
+    # Проверка кодом в этом ходе: сколько утверждений модели проверено и сколько отброшено.
+    checked_claims: int = 0
+    rejected_claims: int = 0
 
 
 class AnswerAgent:
@@ -245,6 +248,8 @@ class AnswerAgent:
                     )
         inp = ComposeInput(question=u.standalone_question, departments=dep_sources, expert_notes=list(notes.values()))
         composition = self._compose_parallel(inp, tc)
+        tc.checked_claims = sum(len(v.claims) for v in composition.variants) + len(composition.rejected)
+        tc.rejected_claims = len(composition.rejected)
         if self.strict_verify:
             composition = self._strict(tc, inp, composition)
         return composition, hits
@@ -350,7 +355,11 @@ class AnswerAgent:
             )
         tc.state["clarifications"] = 0
         return AgentReply(
-            kind=ReplyKind.ANSWER, text=text.strip(), variants=views, options=options, missing_documents=missing
+            kind=ReplyKind.ANSWER,
+            text=text.strip(),
+            variants=views,
+            options=options,
+            missing_documents=missing,
         )
 
     def _same_header(self, answered: list[Any]) -> str:
@@ -598,6 +607,8 @@ class AnswerAgent:
             latency_ms=int((time.perf_counter() - tc.started) * 1000),
             llm_calls=len(meter.calls),
         )
+        if reply.checked_claims == 0:
+            reply.checked_claims, reply.rejected_claims = tc.checked_claims, tc.rejected_claims
         tc.state["last_options"] = [o.model_dump() for o in reply.options]
         self.on_usage(tc.skill_ctx)
         with self.sessions.begin() as s:

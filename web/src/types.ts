@@ -64,6 +64,8 @@ export interface AgentReply {
   missing_documents: string[];
   ticket: { code: string; status: string; quality_email: string } | null;
   usage: Usage;
+  checked_claims: number;
+  rejected_claims: number;
   turn_id: number | null;
 }
 

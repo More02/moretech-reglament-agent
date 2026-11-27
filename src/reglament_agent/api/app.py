@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from reglament_agent.api import routes_admin, routes_channels, routes_chat, routes_documents
+from reglament_agent.api import routes_admin, routes_channels, routes_chat, routes_documents, routes_mailbox
 from reglament_agent.api.ratelimit import RateLimiter
 from reglament_agent.config import ROOT, Settings, get_settings
 from reglament_agent.container import Container, build_container
@@ -53,7 +53,7 @@ def create_app(settings: Settings | None = None, container: Container | None = N
 
     app = FastAPI(title="MORE TECH · Агент по регламентам", version="0.1.0", lifespan=lifespan)
     app.state.limiter = RateLimiter(settings.rate_limit_per_minute)
-    for module in (routes_chat, routes_admin, routes_documents, routes_channels):
+    for module in (routes_chat, routes_admin, routes_mailbox, routes_documents, routes_channels):
         app.include_router(module.router)
     if WEB_DIST.exists():
         _mount_web(app)

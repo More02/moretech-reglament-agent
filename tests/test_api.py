@@ -46,3 +46,26 @@ def test_validation_and_unknown_conversation(app: tuple[Container, MemoryMailbox
     with client(app) as http:
         assert http.post("/api/conversations/nope/messages", json={"text": "?"}).status_code == 404
         assert http.post("/api/conversations/nope/messages", json={"text": ""}).status_code == 422
+
+
+def test_quality_mailbox_demo_reply(app: tuple[Container, MemoryMailbox]) -> None:
+    with client(app) as http:
+        profile = {"name": "Иван", "email": "ivan@corp.test", "department": "alpha"}
+        conv = http.post("/api/conversations", json={"profile": profile}).json()["id"]
+        r = http.post(
+            f"/api/conversations/{conv}/messages",
+            json={"text": "Компенсируют ли такси в командировке в выходной день?"},
+        ).json()
+        assert r["kind"] == "not_found"
+        sent = http.post(f"/api/conversations/{conv}/options", json={"option_id": "escalate"}).json()
+        code = sent["ticket"]["code"]
+        threads = http.get("/api/admin/mail").json()
+        assert threads["demo"] is True
+        assert threads["threads"][0]["code"] == code
+        res = http.post(
+            "/api/admin/mail/reply",
+            json={"ticket_code": code, "sender": "quality@corp.test", "body": "Компенсируется по согласованию с РП."},
+        )
+        assert res.status_code == 200
+        msgs = http.get("/api/admin/mail").json()["threads"][0]["messages"]
+        assert [m["direction"] for m in msgs][:2] == ["out", "in"]
