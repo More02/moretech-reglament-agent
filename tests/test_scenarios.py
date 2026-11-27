@@ -217,3 +217,22 @@ def test_same_expert_correction_supersedes(app: tuple[Container, MemoryMailbox])
     with c.sessions() as s:
         statuses = sorted(n.status for n in s.scalars(select(NoteRow)))
     assert statuses == ["published", "retired"]
+
+
+def test_choosing_other_department_than_profile_composes_it(app: tuple[Container, MemoryMailbox]) -> None:
+    c, _ = app
+    conv = c.agent.start(EMPLOYEE.model_copy(update={"department": "alpha"}))
+    first = c.agent.ask(conv, "Как часто РП обновляет реестр рисков?")
+    assert [v.department_id for v in first.variants] == ["alpha"]
+    other = c.agent.ask(conv, "Бета")
+    assert other.kind is ReplyKind.ANSWER
+    assert [v.department_id for v in other.variants] == ["beta"]
+
+
+def test_escalate_without_pending_uses_last_question(app: tuple[Container, MemoryMailbox]) -> None:
+    c, mailbox = app
+    conv = c.agent.start(EMPLOYEE.model_copy(update={"department": "alpha"}))
+    c.agent.ask(conv, "Компенсируют ли такси в командировке в выходной день?")
+    sent = c.agent.choose(conv, "escalate")
+    assert sent.kind is ReplyKind.ESCALATION_SENT
+    assert "такси" in mailbox.sent[-1][1].body

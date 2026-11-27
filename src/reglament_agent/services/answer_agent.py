@@ -42,6 +42,7 @@ from reglament_agent.passport import Passport
 from reglament_agent.services.knowledge import KnowledgeBase
 from reglament_agent.services.mail_agent import MailAgent
 from reglament_agent.services.retrieval import Hit, HybridIndex
+from ru_text import lemmas
 from skill_sdk import LLMClient, LLMError, SkillContext
 
 log = logging.getLogger(__name__)
@@ -147,6 +148,7 @@ class AnswerAgent:
             tc.skill_ctx,
         )
         tc.state["pending"] = None
+        tc.state["last_question"] = understanding.standalone_question
         match understanding.intent:
             case Intent.GREETING:
                 return self._greeting()
@@ -187,7 +189,7 @@ class AnswerAgent:
             "departments": departments,
             "complex": u.complex_project,
         }
-        missing = self.kb.missing_references(self._cited_or_found(composition, hits))
+        missing = self._missing_documents(composition, hits)
         answered = composition.answered()
 
         if composition.conflict is not None:
@@ -267,10 +269,17 @@ class AnswerAgent:
             variants.append(v)
         return comp.model_copy(update={"variants": variants})
 
-    @staticmethod
-    def _cited_or_found(comp: VerifiedComposition, hits: dict[str, list[Hit]]) -> list[str]:
+    def _missing_documents(self, comp: VerifiedComposition, hits: dict[str, list[Hit]]) -> list[str]:
+        """Отсутствующие документы, на которые ссылаются пункты ответа. Если ответа нет - только те, что модель
+        назвала нужными для ответа и которые действительно упомянуты в найденных пунктах (сверка кодом)."""
         cited = [c.source_id for v in comp.variants for c in v.claims if not c.source_id.startswith("note:")]
-        return cited or [h.unit.id for hs in hits.values() for h in hs[:2]]
+        if cited:
+            return self.kb.missing_references(cited)
+        if not comp.missing_documents:
+            return []
+        found = self.kb.missing_references([h.unit.id for hs in hits.values() for h in hs])
+        named = [lemmas(m) for m in comp.missing_documents]
+        return [f for f in found if any(set(n) & set(lemmas(f)) >= set(n[:2]) for n in named if n)]
 
     # ================= ответы =================
 
@@ -408,7 +417,10 @@ class AnswerAgent:
 
     def _escalate(self, tc: TurnContext, question: str, prefix: str = "") -> AgentReply:
         pending = tc.state.get("pending") or {}
-        context = "; ".join(t.text for t in tc.history[-4:] if t.role == "employee" and t.text != question)
+        labels = {o.label for o in self._last_options(tc)}
+        context = "; ".join(
+            t.text for t in tc.history[-6:] if t.role == "employee" and t.text != question and t.text not in labels
+        )
         ticket = self.mail.escalate(
             conversation_id=tc.conversation_id,
             profile=tc.profile,
@@ -474,7 +486,11 @@ class AnswerAgent:
     def _choose(self, tc: TurnContext, option_id: str) -> AgentReply:
         pending = tc.state.get("pending")
         if option_id == OPT_ESCALATE:
-            question = pending["question"] if pending else (tc.history[-2].text if len(tc.history) > 1 else "")
+            question = pending["question"] if pending else tc.state.get("last_question", "")
+            if not question:
+                return AgentReply(
+                    kind=ReplyKind.ERROR, text="Сначала задайте вопрос - я отправлю его в службу качества."
+                )
             return self._escalate(tc, question)
         if not pending:
             return AgentReply(kind=ReplyKind.ERROR, text="Этот вариант уже неактуален - задайте вопрос ещё раз.")
@@ -495,6 +511,15 @@ class AnswerAgent:
         if option_id.startswith(DEP_PREFIX):
             dep = option_id.removeprefix(DEP_PREFIX)
             tc.state["department"] = dep
+            if dep not in pending.get("departments", []):
+                # Варианты считались для другого подразделения (например, из профиля) - готовим ответ для выбранного
+                u = Understanding(
+                    intent=Intent.REGULATION_QUESTION,
+                    standalone_question=pending["question"],
+                    search_queries=[pending["question"]],
+                )
+                comp, _ = self._compose(tc, u, [dep])
+                answered = comp.answered()
             chosen = [v for v in answered if v.department_id == dep]
             if not chosen:
                 return self._not_found_reply(tc, pending["question"], [], scope=self.passport.department(dep).name)
