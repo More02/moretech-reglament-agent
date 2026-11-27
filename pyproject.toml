@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 embeddings = ["sentence-transformers>=3.0"]
-pii = ["natasha>=1.6"]
+pii = ["natasha>=1.6", "setuptools<81"]  # pymorphy2 внутри Natasha ищет словари через pkg_resources
 dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.11", "types-PyYAML", "lxml-stubs", "pre-commit>=3.8"]
 
 [project.scripts]

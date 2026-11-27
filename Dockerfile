@@ -31,7 +31,8 @@ COPY sdk ./sdk
 COPY libs ./libs
 COPY skills ./skills
 # Установка в режиме разработки: скиллы читают промпты и схемы из своих папок в /app/skills
-RUN for i in 1 2 3 4 5; do uv pip install --quiet -e ".[embeddings,pii]" && exit 0; sleep 15; done; exit 1
+# setuptools: pymorphy2 (Natasha, обезличивание) ищет словари через pkg_resources
+RUN for i in 1 2 3 4 5; do uv pip install --quiet -e ".[embeddings,pii]" "setuptools<81" && exit 0; sleep 15; done; exit 1
 COPY passports ./passports
 COPY evals ./evals
 COPY migrations ./migrations
