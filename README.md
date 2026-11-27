@@ -78,9 +78,11 @@ docs/        архитектура, решения (ADR), стоимость, �
 ```bash
 cp .env.example .env                    # ключ модели, почта, домен
 mkdir -p data/regulations && cp *.docx data/regulations/   # регламенты - отдельный том, в репозиторий не входят
-docker compose -f deploy/docker-compose.yml up -d --build
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+# или на чистый сервер Ubuntu одной командой (Docker, зеркала образов, HTTPS):
+curl -fsSL https://raw.githubusercontent.com/More02/moretech-reglament-agent/main/deploy/bootstrap.sh | bash
 # своя видеокарта вместо облачного API:
-docker compose -f deploy/docker-compose.yml --profile local-llm up -d
+docker compose --env-file .env -f deploy/docker-compose.yml --profile local-llm up -d
 ```
 
 Разработка без сети и ключей (тестовая модель, хэш-эмбеддинги, почта в памяти):
