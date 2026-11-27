@@ -11,6 +11,7 @@ import re
 from rapidfuzz import fuzz
 
 from evidence.quotes import _ELLIPSIS, _clean
+from ru_text import lemmas
 
 _RESTRICTIVE = re.compile(
     r"\b(только|запрещ\w*|не допуска\w*|не мо(?:гут|жет)\w*|не вправе|обязательн\w*|исключени\w*|кроме|необходимо)\b"
@@ -94,3 +95,29 @@ def full_sentence(quote: str, text: str) -> str:
     if best + 1 < len(sentences) and _EXCEPTION_SENTENCE.match(_clean(sentences[best + 1])):
         picked = f"{picked} {sentences[best + 1]}"
     return picked
+
+
+_TEXT_CONDITION = re.compile(r"(?:\s|^)(?:и при|при наличии|при условии|за исключением|кроме|исключени\w*)\b")
+MIN_COVERAGE = 0.34
+
+
+def dropped_condition(claim: str, quote: str) -> str | None:
+    """Цитата содержит второе условие или исключение правила, а утверждение его потеряло.
+
+    «РП может привлечь субподрядчика только после подписания договора» при цитате «…только после подписания
+    договора и при наличии Заказа покупателя…» - смысл правила искажён, хотя цитата верна.
+    """
+    q = _clean(quote)
+    if not _RESTRICTIVE.search(q):
+        return None
+    m = _TEXT_CONDITION.search(q)
+    if m is None:
+        return None
+    tail = q[m.start() :].strip(" ,.;")
+    tail_lemmas = {w for w in lemmas(tail) if len(w) > 3}
+    if len(tail_lemmas) < 2:
+        return None
+    claim_lemmas = set(lemmas(claim))
+    if len(tail_lemmas & claim_lemmas) / len(tail_lemmas) >= MIN_COVERAGE:
+        return None
+    return tail

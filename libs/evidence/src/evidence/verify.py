@@ -28,7 +28,34 @@ def verify_claim(claim: str, quote: str, clause_text: str) -> ClaimCheck:
             unsupported_numbers=missing,
             reason=f"в цитате нет чисел из утверждения: {', '.join(sorted(missing))}",
         )
+    extra_units = time_units(claim) - time_units(quote)
+    if extra_units:
+        return ClaimCheck(
+            ok=False,
+            quote_match=match,
+            reason=f"в цитате нет единиц срока из утверждения: {', '.join(sorted(extra_units))}",
+        )
     return ClaimCheck(ok=True, quote_match=match)
+
+
+_UNITS = {"минута", "час", "день", "неделя", "месяц", "квартал", "год"}
+_PERIODIC = {"ежедневно": "день", "еженедельно": "неделя", "ежемесячно": "месяц", "ежеквартально": "квартал",
+             "ежегодно": "год", "ежедневный": "день", "еженедельный": "неделя", "ежемесячный": "месяц",
+             "ежеквартальный": "квартал", "ежегодный": "год"}  # fmt: skip
+
+
+def time_units(text: str) -> set[str]:
+    """Единицы срока в тексте: «раз в неделю» и «еженедельно» - одно и то же. «Неделя» вместо «месяца» -
+    другой срок при тех же числах, такую ошибку не ловит сверка чисел."""
+    from ru_text import lemmas
+
+    found = set()
+    for lem in lemmas(text, drop_stopwords=False):
+        if lem in _UNITS:
+            found.add(lem)
+        elif lem in _PERIODIC:
+            found.add(_PERIODIC[lem])
+    return found
 
 
 # Слова, меняющие смысл правила при прочих равных: единицы срока и модальность («можно» / «нельзя»)

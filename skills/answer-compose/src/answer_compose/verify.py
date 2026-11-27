@@ -12,7 +12,7 @@ from answer_compose.models import (
     Variant,
     VerifiedComposition,
 )
-from evidence import full_sentence, lost_condition, numbers, texts_differ, verify_claim
+from evidence import dropped_condition, full_sentence, lost_condition, numbers, texts_differ, verify_claim
 
 
 def _allowed_sources(inp: ComposeInput) -> dict[str, dict[str, str]]:
@@ -127,6 +127,7 @@ def lost_conditions(out: VerifiedComposition, inp: ComposeInput) -> list[str]:
         for claim in variant.claims:
             others = [q for q in quotes if q is not claim.quote]
             rest = lost_condition(claim.quote, allowed[variant.department_id][claim.source_id], others)
+            rest = rest or _dropped_in_text(claim, variant.claims)
             if rest:
                 notes.append(
                     f"{variant.department_id}: утверждение «{claim.text}» ({claim.source_id}) неполное - "
@@ -146,9 +147,18 @@ def complete_conditions(out: VerifiedComposition, inp: ComposeInput) -> Verified
         for claim in variant.claims:
             text = allowed[variant.department_id][claim.source_id]
             others = [q for q in quotes if q is not claim.quote]
-            if lost_condition(claim.quote, text, others):
+            if lost_condition(claim.quote, text, others) or _dropped_in_text(claim, variant.claims):
                 sentence = full_sentence(claim.quote, text)
                 claim = claim.model_copy(update={"text": sentence, "quote": sentence})
             claims.append(claim)
         variants.append(variant.model_copy(update={"claims": claims}))
     return out.model_copy(update={"variants": variants})
+
+
+def _dropped_in_text(claim: Claim, siblings: list[Claim]) -> str | None:
+    """Условие есть в цитате, но утверждение (и соседние утверждения того же ответа) его не передают."""
+    rest = dropped_condition(claim.text, claim.quote)
+    if rest is None:
+        return None
+    together = " ".join(c.text for c in siblings)
+    return dropped_condition(together, claim.quote)
