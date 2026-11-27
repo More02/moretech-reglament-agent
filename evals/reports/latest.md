@@ -3,92 +3,92 @@
 | Метрика | Значение |
 |---|---|
 | cases | 73 |
-| behavior_accuracy | 0.932 |
-| citation_accuracy | 0.906 |
+| behavior_accuracy | 0.973 |
+| citation_accuracy | 0.926 |
 | false_answer_rate | 0.0 |
 | escalation_recall | 0.875 |
-| clarify_recall | 0.875 |
-| missing_docs_flagged | 1.0 |
+| clarify_recall | 1.0 |
+| missing_docs_flagged | 0.667 |
 | judge_distortions | 0 |
-| latency_ms_p50 | 11036 |
-| latency_ms_p95 | 19759 |
-| avg_cost_rub | 0.714 |
-| avg_llm_calls | 1.82 |
-| duration_s | 835.6 |
+| latency_ms_p50 | 4402 |
+| latency_ms_p95 | 5354 |
+| avg_cost_rub | 0.1884 |
+| avg_llm_calls | 2.08 |
+| duration_s | 292.6 |
 | model | qwen3.6-35b-a3b |
 
 | id | ожидали | получили | поведение | цитата | ₽ | мс |
 |---|---|---|---|---|---|---|
-| A01 | answer | answer | да | да | 0.8219 | 13222 |
-| A02 | answer | answer | да | да | 0.834 | 12095 |
-| A03 | answer | answer | да | да | 0.8331 | 10253 |
-| A04 | answer | answer | да | да | 0.5451 | 9452 |
-| A05 | answer | answer | да | да | 1.2074 | 19759 |
-| A06 | answer | answer | да | да | 1.0989 | 14789 |
-| A07 | answer | answer | да | да | 0.4964 | 8281 |
-| A08 | answer | answer | да | да | 0.641 | 9181 |
-| A09 | answer | answer | да | да | 0.9177 | 13319 |
-| A10 | answer | answer | да | да | 0.5382 | 10880 |
-| A11 | answer | answer | да | да | 0.9359 | 15310 |
-| A12 | answer | answer | да | да | 0.5347 | 11231 |
-| A13 | answer | answer | да | да | 0.1883 | 4514 |
-| A14 | answer | answer | да | да | 0.9778 | 12137 |
-| A15 | answer | answer | да | да | 0.7849 | 11717 |
-| A16 | answer | answer | да | да | 0.8079 | 10163 |
-| A17 | answer | answer | да | да | 1.0635 | 12691 |
-| A18 | answer | answer | да | да | 0.5392 | 9235 |
-| A19 | answer | answer | да | да | 1.39 | 19810 |
-| A20 | answer | answer | да | да | 0.5385 | 7870 |
-| A21 | answer | answer | да | нет | 1.2065 | 19120 |
-| A22 | answer | answer | да | да | 0.6691 | 11036 |
-| A23 | answer | answer | да | да | 0.4899 | 10196 |
-| A24 | answer | answer | да | да | 0.217 | 6016 |
-| A25 | answer | answer | да | да | 1.0304 | 12372 |
-| A26 | answer | answer | да | да | 1.1582 | 18013 |
-| A27 | answer | answer | да | да | 0.5592 | 9880 |
-| A28 | answer | answer | да | да | 1.1968 | 16160 |
-| A29 | answer | answer | да | да | 0.657 | 11188 |
-| A30 | answer | answer | да | да | 1.0919 | 15354 |
-| A31 | answer | answer | да | да | 1.0594 | 12225 |
-| A32 | answer | answer | да | да | 1.0132 | 12469 |
-| A33 | answer | out_of_scope | нет | нет | 0.3961 | 4948 |
-| A34 | answer | answer | да | да | 0.1683 | 4359 |
-| A35 | answer | answer | да | да | 0.4897 | 9350 |
-| A36 | answer | not_found | нет | нет | 0.1993 | 5143 |
-| A37 | answer | not_found | нет | нет | 0.9829 | 13037 |
-| A38 | answer | answer | да | да | 0.929 | 13948 |
-| A39 | answer | answer | да | да | 0.5404 | 9176 |
-| A40 | answer | answer | да | да | 0.7893 | 9778 |
-| B01 | clarify | clarify | да | да | 1.106 | 16468 |
-| B02 | clarify | answer | нет | - | 0.7974 | 15610 |
-| B03 | clarify | clarify | да | да | 0.8847 | 12615 |
-| B04 | clarify | clarify | да | да | 0.6739 | 15743 |
-| B05 | clarify | clarify | да | да | 1.5488 | 38665 |
-| B06 | clarify | clarify | да | да | 0.6477 | 18790 |
-| B07 | clarify | clarify | да | да | 1.8454 | 19174 |
-| B08 | clarify | clarify | да | да | 1.5618 | 16711 |
-| C01 | answer | answer | да | нет | 0.633 | 11518 |
-| C02 | answer | answer | да | да | 0.7105 | 12073 |
-| C03 | answer | answer | да | да | 0.2572 | 8001 |
-| D01 | not_found | not_found | да | - | 0.5236 | 9305 |
-| D02 | not_found | not_found | да | - | 0.8232 | 9324 |
-| D03 | not_found | not_found | да | - | 0.9413 | 12186 |
-| D04 | not_found | not_found | да | - | 0.8212 | 9996 |
-| D05 | not_found | not_found | да | - | 0.7351 | 8821 |
-| D06 | not_found | out_of_scope | нет | - | 0.3748 | 6109 |
-| D07 | not_found | not_found | да | - | 0.4735 | 15984 |
-| D08 | not_found | not_found | да | - | 0.7205 | 11847 |
-| E01 | out_of_scope | out_of_scope | да | - | 0.055 | 2466 |
-| E02 | out_of_scope | out_of_scope | да | - | 0.4269 | 5868 |
-| E03 | out_of_scope | out_of_scope | да | - | 0.3381 | 4440 |
-| E04 | out_of_scope | out_of_scope | да | - | 0.35 | 8513 |
-| F01 | off_task | off_task | да | - | 0.0516 | 1909 |
-| F02 | off_task | off_task | да | - | 0.3084 | 8644 |
-| F03 | off_task | off_task | да | - | 0.3487 | 10179 |
-| F04 | off_task | off_task | да | - | 0.393 | 4760 |
-| G01 | answer | answer | да | да | 0.2128 | 6008 |
-| G02 | answer | answer | да | да | 1.3711 | 24578 |
-| G03 | answer | answer | да | да | 1.1684 | 20589 |
-| H01 | document | document | да | - | 0.0581 | 1693 |
-| H02 | document | document | да | - | 0.3708 | 5505 |
-| I01 | greeting | greeting | да | - | 0.0537 | 1621 |
+| A01 | answer | answer | да | да | 0.1617 | 4879 |
+| A02 | answer | answer | да | да | 0.1703 | 4980 |
+| A03 | answer | answer | да | да | 0.1687 | 4648 |
+| A04 | answer | answer | да | да | 0.1751 | 4982 |
+| A05 | answer | answer | да | да | 0.1874 | 4987 |
+| A06 | answer | answer | да | нет | 0.1883 | 5056 |
+| A07 | answer | answer | да | да | 0.1737 | 3821 |
+| A08 | answer | answer | да | да | 0.1867 | 4402 |
+| A09 | answer | answer | да | да | 0.1557 | 3482 |
+| A10 | answer | answer | да | да | 0.1709 | 4115 |
+| A11 | answer | answer | да | да | 0.1859 | 4174 |
+| A12 | answer | answer | да | да | 0.1679 | 4169 |
+| A13 | answer | answer | да | да | 0.1947 | 4925 |
+| A14 | answer | answer | да | да | 0.1741 | 8481 |
+| A15 | answer | answer | да | да | 0.1725 | 4096 |
+| A16 | answer | answer | да | да | 0.1566 | 3683 |
+| A17 | answer | answer | да | да | 0.1808 | 5167 |
+| A18 | answer | answer | да | да | 0.1879 | 4426 |
+| A19 | answer | answer | да | да | 0.2127 | 4996 |
+| A20 | answer | answer | да | да | 0.1648 | 3875 |
+| A21 | answer | answer | да | да | 0.1908 | 4595 |
+| A22 | answer | answer | да | да | 0.1687 | 3956 |
+| A23 | answer | answer | да | нет | 0.1881 | 4663 |
+| A24 | answer | answer | да | да | 0.206 | 4361 |
+| A25 | answer | answer | да | да | 0.1862 | 4527 |
+| A26 | answer | answer | да | да | 0.2024 | 4660 |
+| A27 | answer | answer | да | да | 0.1967 | 4298 |
+| A28 | answer | answer | да | да | 0.2131 | 5539 |
+| A29 | answer | answer | да | да | 0.1605 | 4129 |
+| A30 | answer | answer | да | да | 0.1812 | 4154 |
+| A31 | answer | answer | да | да | 0.1877 | 4439 |
+| A32 | answer | answer | да | да | 0.1721 | 3924 |
+| A33 | answer | answer | да | да | 0.1608 | 4360 |
+| A34 | answer | answer | да | да | 0.171 | 4453 |
+| A35 | answer | answer | да | да | 0.1906 | 4650 |
+| A36 | answer | answer | да | да | 0.2227 | 5354 |
+| A37 | answer | answer | да | да | 0.1813 | 4631 |
+| A38 | answer | answer | да | да | 0.1788 | 4425 |
+| A39 | answer | answer | да | да | 0.1672 | 3779 |
+| A40 | answer | answer | да | да | 0.1906 | 4531 |
+| B01 | clarify | clarify | да | да | 0.3908 | 5097 |
+| B02 | clarify | clarify | да | да | 0.3757 | 4392 |
+| B03 | clarify | clarify | да | да | 0.4059 | 4511 |
+| B04 | clarify | clarify | да | да | 0.417 | 4457 |
+| B05 | clarify | clarify | да | да | 0.4374 | 4705 |
+| B06 | clarify | clarify | да | да | 0.4432 | 4626 |
+| B07 | clarify | clarify | да | да | 0.4808 | 5907 |
+| B08 | clarify | clarify | да | да | 0.3779 | 4416 |
+| C01 | answer | answer | да | нет | 0.3216 | 5269 |
+| C02 | answer | answer | да | да | 0.3095 | 4869 |
+| C03 | answer | answer | да | да | 0.3024 | 7458 |
+| D01 | not_found | not_found | да | - | 0.1589 | 3538 |
+| D02 | not_found | not_found | да | - | 0.1551 | 5287 |
+| D03 | not_found | not_found | да | - | 0.1625 | 3654 |
+| D04 | not_found | not_found | да | - | 0.1718 | 3884 |
+| D05 | not_found | not_found | да | - | 0.1563 | 3613 |
+| D06 | not_found | out_of_scope | нет | - | 0.0574 | 1412 |
+| D07 | not_found | not_found | да | - | 0.1541 | 3526 |
+| D08 | not_found | not_found | да | - | 0.1551 | 3641 |
+| E01 | out_of_scope | out_of_scope | да | - | 0.0571 | 1534 |
+| E02 | out_of_scope | out_of_scope | да | - | 0.0566 | 1204 |
+| E03 | out_of_scope | out_of_scope | да | - | 0.0561 | 1278 |
+| E04 | out_of_scope | out_of_scope | да | - | 0.0549 | 1184 |
+| F01 | off_task | off_task | да | - | 0.0555 | 1216 |
+| F02 | off_task | off_task | да | - | 0.0573 | 1249 |
+| F03 | off_task | off_task | да | - | 0.0573 | 1248 |
+| F04 | off_task | off_task | да | - | 0.0575 | 1244 |
+| G01 | answer | answer | да | да | 0.1943 | 4597 |
+| G02 | answer | document | нет | нет | 0.0608 | 1715 |
+| G03 | answer | answer | да | да | 0.1804 | 4428 |
+| H01 | document | document | да | - | 0.0619 | 1553 |
+| H02 | document | document | да | - | 0.0632 | 1422 |
+| I01 | greeting | greeting | да | - | 0.0545 | 1474 |

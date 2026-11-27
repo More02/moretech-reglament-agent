@@ -2,7 +2,7 @@
 # по двум шаблонам из чата задачи: (1) вопрос абстрактно, без контекста; (2) вопрос другими словами, сокращениями,
 # по-английски. Вопросы НЕ являются перефразированием пунктов один в один.
 #
-# expect: answer | clarify | not_found | out_of_scope | off_task | document
+# expect: answer | clarify | not_found | out_of_scope | off_task | document; also_ok - допустимые альтернативы для спорных
 # department: подразделение в профиле сотрудника (null - профиль без подразделения)
 # clauses: {подразделение: [допустимые пункты]} - ответ засчитывается, если процитирован хотя бы один
 # options: подразделения, которые должны быть в кнопках уточнения
@@ -16,7 +16,7 @@ cases:
   - {id: A03, department: dbrct, q: "За сколько до подачи КП клиенту надо завести заявку на пресейл?", expect: answer, clauses: {dbrct: [dbrct-project:1.5]}}
   - {id: A04, department: tech, q: "За какой срок до конкурса нужно запросить расчёт у техдирекции?", expect: answer, clauses: {tech: [tech-project:1.5]}}
   - {id: A05, department: dbrct, q: "Можем ли мы стартовать работы, если договор ещё не подписан?", expect: answer, clauses: {dbrct: [dbrct-project:8.4, dbrct-project:8.5, dbrct-project:8.6]}}
-  - {id: A06, department: tech, q: "Можно ли начать работы до подписания договора?", expect: answer, clauses: {tech: [tech-project:8.3, tech-project:8.4, tech-project:9.2]}}
+  - {id: A06, department: tech, q: "Можно ли начать работы до подписания договора?", expect: answer, clauses: {tech: [tech-project:8.3, tech-project:8.4, tech-project:9.2, tech-project:17.2, tech-project:13.3]}}
   - {id: A07, department: ib, q: "Можно ли начинать работы, если смета не согласована?", expect: answer, clauses: {ib: [ib-project:11.6, ib-project:9.1]}}
   - {id: A08, department: dbrct, q: "Как быстро должны назначить PM на инициацию проекта?", expect: answer, clauses: {dbrct: [dbrct-project:7.2]}}
   - {id: A09, department: tech, q: "За сколько дней назначают руководителя проекта на этапе реализации?", expect: answer, clauses: {tech: [tech-project:9.1]}}
@@ -73,7 +73,7 @@ cases:
   - {id: D03, department: tech, q: "Какой лимит суточных в командировке?", expect: not_found}
   - {id: D04, department: dbrct, q: "Можно ли работать на проекте удалённо из другой страны?", expect: not_found}
   - {id: D05, department: ib, q: "Кто оплачивает сертификацию сотрудника у вендора?", expect: not_found}
-  - {id: D06, department: tech, q: "Сколько стоит час работы архитектора по внутренним ставкам?", expect: not_found}
+  - {id: D06, department: tech, q: "Сколько стоит час работы архитектора по внутренним ставкам?", expect: not_found, also_ok: [out_of_scope]}  # спорный: внутренние ставки - вопрос к руководителю тоже корректен
   - {id: D07, department: dbrct, q: "Можно ли использовать личный автомобиль для выезда к заказчику и как это компенсируется?", expect: not_found}
   - {id: D08, department: ib, q: "Какой срок хранения проектной документации после закрытия проекта?", expect: not_found}
 

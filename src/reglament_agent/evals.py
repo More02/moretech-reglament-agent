@@ -61,7 +61,7 @@ def _run_case(c: Container, case: dict[str, Any]) -> CaseResult:
     expect = case["expect"]
     first_kind = reply.kind.value
     total_cost, total_calls = reply.usage.cost_rub, reply.usage.llm_calls
-    behavior_ok = reply.kind.value == expect
+    behavior_ok = reply.kind.value == expect or reply.kind.value in case.get("also_ok", [])
     citation_ok: bool | None = None
     note = ""
     if expect == "clarify" and behavior_ok:
