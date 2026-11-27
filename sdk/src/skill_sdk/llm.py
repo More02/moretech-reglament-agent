@@ -18,6 +18,7 @@ class Usage:
     output_tokens: int
     latency_ms: int
     cost_rub: float = 0.0
+    provider_cost_rub: float = 0.0  # фактическая цена у провайдера API, если он её сообщает
 
 
 @dataclass

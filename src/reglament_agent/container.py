@@ -96,7 +96,12 @@ def build_container(settings: Settings, *, mail_transport: MailTransport | None 
         else:
             mail_transport = MemoryMailbox(settings.mail_user or "agent@example.ru")
 
-    embedder = make_embedder(settings.embeddings_backend, settings.embeddings_model, settings.embeddings_device)
+    embedder = make_embedder(
+        settings.embeddings_backend,
+        settings.embeddings_model,
+        settings.embeddings_device,
+        settings.embeddings_cache_path,
+    )
     index = HybridIndex(embedder, passport.build_glossary())
     kb = KnowledgeBase(sessions, passport, embedder, index)
     mail = MailAgent(

@@ -24,6 +24,7 @@ class UsageLedger:
                     input_tokens=usage.input_tokens,
                     output_tokens=usage.output_tokens,
                     cost_rub=usage.cost_rub,
+                    provider_cost_rub=usage.provider_cost_rub,
                     latency_ms=usage.latency_ms,
                 )
             )

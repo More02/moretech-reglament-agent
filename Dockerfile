@@ -27,7 +27,7 @@ COPY migrations ./migrations
 COPY alembic.ini ./
 COPY deploy/entrypoint.sh /entrypoint.sh
 COPY --from=web /web/dist ./web/dist
-RUN mkdir -p /models /app/data && chown -R app:app /models /app/data /app/evals
+RUN mkdir -p /models /app/data/cache && chown -R app:app /models /app/data /app/evals
 USER app
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=180s CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)"

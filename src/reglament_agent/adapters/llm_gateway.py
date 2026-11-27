@@ -77,7 +77,10 @@ class OpenAICompatibleLLM:
                 {"role": "system", "content": f"{system}\n\nJSON-схема ответа:\n{schema_hint}"},
                 {"role": "user", "content": masked.text},
             ],
-            # Qwen3.x: ответ без режима рассуждений - быстрее и дешевле для извлечения по источникам
+            # Qwen3.x: ответ без рассуждений - быстрее и в десятки раз дешевле для извлечения по источникам.
+            # Провайдеры понимают разные параметры, поэтому передаём все три (проверено замером reasoning_tokens = 0).
+            "reasoning": {"enabled": False},
+            "enable_thinking": False,
             "chat_template_kwargs": {"enable_thinking": False},
         }
         started = time.perf_counter()
@@ -97,6 +100,7 @@ class OpenAICompatibleLLM:
             output_tokens=out_tok,
             latency_ms=latency,
             cost_rub=self.pricing.cost(in_tok, out_tok),
+            provider_cost_rub=float(usage_raw.get("cost_rub") or 0.0),
         )
         self.on_usage(usage)
         return masked.unmask(content), usage

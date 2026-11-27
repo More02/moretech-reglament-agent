@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     embeddings_model: str = "BAAI/bge-m3"
     embeddings_device: str = "cpu"
     embeddings_backend: str = Field(default="auto", description="auto | sentence-transformers | hashing")
+    embeddings_cache_path: Path | None = ROOT / "data" / "cache" / "embeddings.sqlite"
 
     # Хранилище
     database_url: str = f"sqlite:///{ROOT / 'data' / 'reglament.db'}"

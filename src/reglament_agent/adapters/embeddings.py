@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import sqlite3
+import threading
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Protocol
 
 import numpy as np
@@ -62,16 +65,54 @@ class SentenceTransformerEmbedder:
         return np.asarray(vectors, dtype=np.float32)
 
 
-def make_embedder(backend: str, model_name: str, device: str) -> Embedder:
+class CachedEmbedder:
+    """Дисковый кэш векторов по хэшу текста: перезапуск и переиндексация не пересчитывают неизменённые пункты."""
+
+    def __init__(self, inner: Embedder, path: Path) -> None:
+        self.inner = inner
+        self.name = inner.name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self._db = sqlite3.connect(path, check_same_thread=False)
+        self._db.execute("CREATE TABLE IF NOT EXISTS vectors (key TEXT PRIMARY KEY, vec BLOB NOT NULL)")
+        self._lock = threading.Lock()
+
+    def _key(self, text: str) -> str:
+        return hashlib.sha256(f"{self.name}\n{text}".encode()).hexdigest()
+
+    def embed(self, texts: Sequence[str]) -> NDArray[np.float32]:
+        keys = [self._key(t) for t in texts]
+        with self._lock:
+            found: dict[str, bytes] = {}
+            for i in range(0, len(keys), 500):
+                chunk = keys[i : i + 500]
+                marks = ",".join("?" * len(chunk))
+                found.update(self._db.execute(f"SELECT key, vec FROM vectors WHERE key IN ({marks})", chunk))  # noqa: S608
+        missing = [i for i, k in enumerate(keys) if k not in found]
+        if missing:
+            fresh = self.inner.embed([texts[i] for i in missing])
+            with self._lock:
+                self._db.executemany(
+                    "INSERT OR REPLACE INTO vectors (key, vec) VALUES (?, ?)",
+                    [(keys[i], to_bytes(fresh[j])) for j, i in enumerate(missing)],
+                )
+                self._db.commit()
+            for j, i in enumerate(missing):
+                found[keys[i]] = to_bytes(fresh[j])
+        return np.vstack([from_bytes(found[k]) for k in keys]) if keys else np.zeros((0, 1), dtype=np.float32)
+
+
+def make_embedder(backend: str, model_name: str, device: str, cache_path: Path | None = None) -> Embedder:
+    inner: Embedder
     if backend == "hashing":
         return HashingEmbedder()
     try:
-        return SentenceTransformerEmbedder(model_name, device)
+        inner = SentenceTransformerEmbedder(model_name, device)
     except ImportError:
         if backend == "sentence-transformers":
             raise
         log.warning("sentence-transformers не установлен - работаю на хэш-эмбеддингах")
         return HashingEmbedder()
+    return CachedEmbedder(inner, cache_path) if cache_path else inner
 
 
 def to_bytes(vec: Vector) -> bytes:

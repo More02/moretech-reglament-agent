@@ -17,6 +17,7 @@ services:
       # Регламенты заказчика - отдельный том только для чтения, в образ и репозиторий не попадают
       - ../data/regulations:/app/data/regulations:ro
       - models:/models
+      - cache:/app/data/cache
       - eval-reports:/app/evals/reports
     depends_on:
       db:
@@ -74,3 +75,4 @@ volumes:
   models:
   caddy-data:
   eval-reports:
+  cache:
