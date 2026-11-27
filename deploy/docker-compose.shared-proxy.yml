@@ -1,0 +1,17 @@
+# Сервер, где 80/443 уже занимает Caddy другого продукта (общий сервер MORE TECH).
+# Свой Caddy не запускаем: приложение подключается к сети того Caddy под именем reglament-app,
+# а сайт описывается файлом deploy/reglament.caddy в его каталоге сайтов.
+#   docker compose --env-file .env -f deploy/docker-compose.yml -f deploy/docker-compose.shared-proxy.yml up -d --build
+services:
+  app:
+    networks:
+      default: {}
+      proxy:
+        aliases: [reglament-app]
+  caddy:
+    profiles: [own-proxy]
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-tender_default}

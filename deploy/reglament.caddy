@@ -1,0 +1,11 @@
+# Сайт агента для общего Caddy сервера (каталог сайтов другого продукта).
+{$REGLAMENT_DOMAIN:reglament-agent.more-tech.ru} {
+	encode gzip zstd
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Robots-Tag "noindex, nofollow"
+	}
+	reverse_proxy reglament-app:8000
+}
