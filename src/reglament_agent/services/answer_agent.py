@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
@@ -22,7 +23,9 @@ from answer_compose import (
     ExpertNote,
     Source,
     Status,
+    Variant,
     VerifiedComposition,
+    merge_compositions,
 )
 from answer_verify import AnswerVerify, ClaimToCheck, VerifyInput
 from query_understand import DepartmentRef, Intent, QueryUnderstand, Turn, Understanding, UnderstandInput
@@ -238,10 +241,28 @@ class AnswerAgent:
                         date=h.unit.title.rsplit(" ", 1)[-1],
                     )
         inp = ComposeInput(question=u.standalone_question, departments=dep_sources, expert_notes=list(notes.values()))
-        composition = self.compose_skill.run(inp, tc.skill_ctx)
+        composition = self._compose_parallel(inp, tc)
         if self.strict_verify:
             composition = self._strict(tc, inp, composition)
         return composition, hits
+
+    def _compose_parallel(self, inp: ComposeInput, tc: TurnContext) -> VerifiedComposition:
+        """По вызову модели на подразделение, одновременно: время ответа не растёт с числом подразделений,
+        а короткий контекст одного подразделения не даёт модели смешивать правила разных дирекций."""
+        parts = [inp.model_copy(update={"departments": [dep]}) for dep in inp.departments if dep.sources]
+        if len(parts) <= 1:
+            return (
+                self.compose_skill.run(parts[0], tc.skill_ctx) if parts else self.compose_skill.run(inp, tc.skill_ctx)
+            )
+        with ThreadPoolExecutor(max_workers=len(parts)) as pool:
+            results = list(pool.map(lambda part: self.compose_skill.run(part, tc.skill_ctx), parts))
+        composed = merge_compositions(results)
+        empty = [d.id for d in inp.departments if not d.sources]
+        return composed.model_copy(
+            update={
+                "variants": [*composed.variants, *(Variant(department_id=d, status=Status.NOT_FOUND) for d in empty)]
+            }
+        )
 
     def _expand_sections(self, units: list[Any]) -> list[Any]:
         """Найденный заголовок раздела без текста дополняем его пунктами - иначе модели не на что опереться."""

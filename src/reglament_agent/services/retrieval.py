@@ -70,6 +70,7 @@ class HybridIndex:
         self.glossary = glossary
         self._state = _State()
         self._lock = threading.Lock()
+        self._query_cache: dict[str, NDArray[np.float32]] = {}
 
     def rebuild(self, units: Sequence[Unit], vectors: NDArray[np.float32] | None = None) -> None:
         units = list(units)
@@ -92,6 +93,17 @@ class HybridIndex:
 
     def _tokens(self, text: str) -> list[str]:
         return lemmas(self.glossary.expand(text))
+
+    def _embed_queries(self, queries: list[str]) -> list[NDArray[np.float32]]:
+        """Все переформулировки одним пакетом; повторный поиск (разъяснения, другое подразделение) - из кэша."""
+        texts = [self.glossary.expand(q) for q in queries]
+        missing = [t for t in dict.fromkeys(texts) if t not in self._query_cache]
+        if missing:
+            if len(self._query_cache) > 2000:
+                self._query_cache.clear()
+            for text, vec in zip(missing, self.embedder.embed(missing), strict=True):
+                self._query_cache[text] = vec
+        return [self._query_cache[t] for t in texts]
 
     def unit(self, unit_id: str) -> Unit | None:
         return self._state.by_id.get(unit_id)
@@ -135,9 +147,9 @@ class HybridIndex:
         fusion = _Fusion(dense_scores=np.zeros(len(st.units), dtype=np.float32))
         if st.bm25 is None:
             return fusion
-        for q in queries:
+        query_vectors = self._embed_queries(queries)
+        for q, qv in zip(queries, query_vectors, strict=True):
             bm = np.asarray(st.bm25.get_scores(self._tokens(q)), dtype=np.float32)
-            qv = self.embedder.embed([self.glossary.expand(q)])[0]
             dn = st.vectors @ qv if st.vectors.shape[0] else np.zeros(len(st.units), dtype=np.float32)
             fusion.dense_scores = np.maximum(fusion.dense_scores, dn)
             for ranks, store in ((np.argsort(-bm), fusion.bm25), (np.argsort(-dn), fusion.dense)):

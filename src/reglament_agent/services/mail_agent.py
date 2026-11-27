@@ -11,7 +11,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from clarification_extract import CandidateClause, ClarificationExtract, ExtractInput
-from evidence import numbers
+from evidence import texts_differ
 from expert_reply_classify import ClassifyInput, ExpertReplyClassify, Message, ReplyKind, SenderRole
 from reglament_agent.adapters.db import ClauseRow, DocumentRow, MailRow, NoteRow, TicketRow, TurnRow, utcnow
 from reglament_agent.adapters.mail import IncomingMail, MailTransport, OutgoingMail
@@ -19,7 +19,6 @@ from reglament_agent.domain import AgentReply, Profile, TicketView
 from reglament_agent.domain import ReplyKind as ChatKind
 from reglament_agent.passport import Passport
 from reglament_agent.services.knowledge import KnowledgeBase, clause_ref
-from ru_text import lemmas
 from skill_sdk import LLMClient, LLMError, SkillContext
 
 log = logging.getLogger(__name__)
@@ -31,16 +30,6 @@ class PollReport:
     received: int
     matched: int
     published_notes: list[int]
-
-
-def answers_differ(a: str, b: str) -> bool:
-    """Ответы расходятся по сути: разные числа или мало общих слов. Перефразирование расхождением не считается."""
-    if numbers(a) != numbers(b):
-        return True
-    la, lb = set(lemmas(a)), set(lemmas(b))
-    if not la or not lb:
-        return False
-    return len(la & lb) / len(la | lb) < 0.45
 
 
 class MailAgent:
@@ -266,7 +255,7 @@ class MailAgent:
             )
         same_expert = [n for n in previous if n.expert == expert]
         other_experts = [n for n in previous if n.expert != expert]
-        disputed = [n for n in other_experts if answers_differ(n.answer, clar.answer)]
+        disputed = [n for n in other_experts if texts_differ(n.answer, clar.answer)]
         for old in same_expert:
             self.kb.set_note_status(old.id, "retired", "заменено исправленным ответом того же эксперта")
         for old in disputed:

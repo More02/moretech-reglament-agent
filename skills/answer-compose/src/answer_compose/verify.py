@@ -12,7 +12,7 @@ from answer_compose.models import (
     Variant,
     VerifiedComposition,
 )
-from evidence import numbers, verify_claim
+from evidence import numbers, texts_differ, verify_claim
 
 
 def _allowed_sources(inp: ComposeInput) -> dict[str, dict[str, str]]:
@@ -83,11 +83,30 @@ def _restatus(variant: Variant, kept: list[Claim], *, dropped: int) -> Variant:
 
 
 def _same_facts(answered: list[Variant]) -> bool:
-    """Модель могла сказать «одинаково», а сроки разные: тогда считаем ответы разными."""
+    """Ответы одинаковые, только если совпадают числа цитат и смысл утверждений (пересечение лемм)."""
     if len(answered) < 2:
         return True
     fact_sets = [frozenset().union(*(numbers(c.quote) for c in v.claims)) for v in answered]
-    return len(set(fact_sets)) == 1
+    if len(set(fact_sets)) != 1:
+        return False
+    texts = [" ".join(c.text for c in v.claims) for v in answered]
+    return not any(texts_differ(texts[0], other) for other in texts[1:])
+
+
+def merge_compositions(parts: list[VerifiedComposition]) -> VerifiedComposition:
+    """Объединяет ответы, подготовленные для каждого подразделения отдельно (параллельные вызовы модели).
+    Одинаковость ответов решает код - модель видела только своё подразделение."""
+    variants = [v for p in parts for v in p.variants]
+    answered = [v for v in variants if v.status is not Status.NOT_FOUND]
+    conflict = next((p.conflict for p in parts if p.conflict is not None), None)
+    missing = list(dict.fromkeys(m for p in parts for m in p.missing_documents))
+    return VerifiedComposition(
+        variants=variants,
+        same_across_departments=_same_facts(answered),
+        conflict=conflict,
+        missing_documents=missing,
+        rejected=[r for p in parts for r in p.rejected],
+    )
 
 
 def _valid_conflict(conflict: Conflict | None, allowed: dict[str, dict[str, str]]) -> Conflict | None:

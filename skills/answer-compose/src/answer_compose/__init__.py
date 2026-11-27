@@ -14,7 +14,7 @@ from answer_compose.models import (
     VerifiedComposition,
 )
 from answer_compose.skill import AnswerCompose
-from answer_compose.verify import verify_composition
+from answer_compose.verify import merge_compositions, verify_composition
 
 __all__ = [
     "AnswerCompose",
@@ -29,5 +29,6 @@ __all__ = [
     "Status",
     "Variant",
     "VerifiedComposition",
+    "merge_compositions",
     "verify_composition",
 ]

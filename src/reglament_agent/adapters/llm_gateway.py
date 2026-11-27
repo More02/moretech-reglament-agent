@@ -77,11 +77,14 @@ class OpenAICompatibleLLM:
                 {"role": "system", "content": f"{system}\n\nJSON-схема ответа:\n{schema_hint}"},
                 {"role": "user", "content": masked.text},
             ],
-            # Qwen3.x: ответ без рассуждений - быстрее и в десятки раз дешевле для извлечения по источникам.
-            # Провайдеры понимают разные параметры, поэтому передаём все три (проверено замером reasoning_tokens = 0).
-            "reasoning": {"enabled": False},
+            # Qwen3.x: ответ без рассуждений - быстрее и в разы дешевле для извлечения по источникам.
+            # Агрегатор отправляет запросы разным поставщикам, и они понимают разные параметры. Замер 27.11:
+            # без exclude и выбора поставщика рассуждения иногда включались (518 токенов); с этим набором - 0 из 10.
+            # vLLM и другие OpenAI-совместимые серверы лишние поля игнорируют.
+            "reasoning": {"enabled": False, "exclude": True},
             "enable_thinking": False,
             "chat_template_kwargs": {"enable_thinking": False},
+            "provider": {"order": ["alibaba"]},
         }
         started = time.perf_counter()
         data = self._post(payload)
