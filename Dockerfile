@@ -2,7 +2,8 @@
 FROM node:22-alpine AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
-RUN npm ci --silent
+# Повторы и зеркало реестра: сеть сервера в РФ рвёт долгие загрузки
+RUN for i in 1 2 3 4; do npm ci --silent --fetch-retries=5 --fetch-timeout=120000 && exit 0; npm config set registry https://registry.npmmirror.com; sleep 10; done; exit 1
 COPY web/ ./
 RUN npm run build
 
