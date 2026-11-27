@@ -28,6 +28,12 @@ def verify_claim(claim: str, quote: str, clause_text: str) -> ClaimCheck:
             unsupported_numbers=missing,
             reason=f"в цитате нет чисел из утверждения: {', '.join(sorted(missing))}",
         )
+    from evidence.conditions import foreign_line
+
+    if foreign_line(claim, quote, clause_text):
+        return ClaimCheck(
+            ok=False, quote_match=match, reason="цитата из другой строки перечня, чем предмет утверждения"
+        )
     extra_units = time_units(claim) - time_units(quote)
     if extra_units:
         return ClaimCheck(
@@ -42,6 +48,9 @@ _UNITS = {"минута", "час", "день", "неделя", "месяц", "�
 _PERIODIC = {"ежедневно": "день", "еженедельно": "неделя", "ежемесячно": "месяц", "ежеквартально": "квартал",
              "ежегодно": "год", "ежедневный": "день", "еженедельный": "неделя", "ежемесячный": "месяц",
              "ежеквартальный": "квартал", "ежегодный": "год"}  # fmt: skip
+
+
+TIME_WORDS = frozenset(_UNITS | set(_PERIODIC))
 
 
 def time_units(text: str) -> set[str]:

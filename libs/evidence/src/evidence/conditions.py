@@ -121,3 +121,34 @@ def dropped_condition(claim: str, quote: str) -> str | None:
     if len(tail_lemmas & claim_lemmas) / len(tail_lemmas) >= MIN_COVERAGE:
         return None
     return tail
+
+
+def foreign_line(claim: str, quote: str, text: str) -> bool:
+    """Цитата взята из другой строки перечня, чем то, о чём утверждение.
+
+    Пункт: «Отчётность включает: • исполнителей - раз в неделю; … • реестр рисков - раз в месяц». Утверждение
+    «реестр рисков - раз в неделю» с цитатой «не реже одного раза в неделю» формально подтверждено, но срок
+    взят из чужой строки. Предмет утверждения (слова вне цитаты) должен встречаться в строке цитаты или в
+    заголовке перечня.
+    """
+    lines = [_clean(x) for x in re.split(r"\n|•", text) if x.strip()]
+    if len(lines) < 3:
+        return False
+    fragments = [f for f in (_clean(x).strip(" .,;:") for x in _ELLIPSIS.split(quote)) if f]
+    homes = [i for i, line in enumerate(lines) if all(f in line for f in fragments)]
+    if not homes or 0 in homes:
+        return False
+    # Цитата - большая часть строки: предмет утверждения взят из неё же.
+    quoted = sum(len(f) for f in fragments)
+    if any(quoted >= 0.5 * len(lines[i]) for i in homes):
+        return False
+    from evidence.verify import TIME_WORDS
+
+    def stems(t: str) -> set[str]:
+        return {w[:5] for w in lemmas(t) if len(w) > 3 and w not in TIME_WORDS}
+
+    subject = stems(claim) - stems(quote)
+    if not subject:
+        return False
+    header = stems(lines[0])
+    return all(not (subject & (stems(lines[i]) | header)) for i in homes)
