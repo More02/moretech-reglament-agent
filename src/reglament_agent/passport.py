@@ -72,6 +72,14 @@ class DialogRules(BaseModel):
     auto_send_escalation: bool = False
 
 
+class DemoProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str
+    email: str
+    position: str = ""
+    department: str | None = None
+
+
 class Passport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
@@ -85,6 +93,7 @@ class Passport(BaseModel):
     glossary: list[GlossaryEntry]
     out_of_scope: list[OutOfScope] = Field(default_factory=list)
     off_task_examples: list[str] = Field(default_factory=list)
+    demo_profiles: list[DemoProfile] = Field(default_factory=list)
 
     @classmethod
     def load(cls, path: Path) -> Passport:

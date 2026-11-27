@@ -1,0 +1,102 @@
+# Тестовый набор вопросов. Эталонов заказчик не дал - набор собран вручную по тексту четырёх регламентов
+# по двум шаблонам из чата задачи: (1) вопрос абстрактно, без контекста; (2) вопрос другими словами, сокращениями,
+# по-английски. Вопросы НЕ являются перефразированием пунктов один в один.
+#
+# expect: answer | clarify | not_found | out_of_scope | off_task | document
+# department: подразделение в профиле сотрудника (null - профиль без подразделения)
+# clauses: {подразделение: [допустимые пункты]} - ответ засчитывается, если процитирован хотя бы один
+# options: подразделения, которые должны быть в кнопках уточнения
+# choose: какую кнопку нажать после уточнения (проверяется ответ этого подразделения по clauses)
+# missing: ответ должен подсветить отсутствующий документ
+
+cases:
+  # ---------- A. Прямые вопросы другими словами (подразделение из профиля) ----------
+  - {id: A01, department: dbrct, q: "Можно подать в тендер бюджетную оценку?", expect: answer, clauses: {dbrct: [dbrct-project:2.4]}}
+  - {id: A02, department: tech, q: "Бюджетную оценку можно использовать для участия в конкурсе?", expect: answer, clauses: {tech: [tech-project:2.4]}}
+  - {id: A03, department: dbrct, q: "За сколько до подачи КП клиенту надо завести заявку на пресейл?", expect: answer, clauses: {dbrct: [dbrct-project:1.5]}}
+  - {id: A04, department: tech, q: "За какой срок до конкурса нужно запросить расчёт у техдирекции?", expect: answer, clauses: {tech: [tech-project:1.5]}}
+  - {id: A05, department: dbrct, q: "Можем ли мы стартовать работы, если договор ещё не подписан?", expect: answer, clauses: {dbrct: [dbrct-project:8.4, dbrct-project:8.5, dbrct-project:8.6]}}
+  - {id: A06, department: tech, q: "Можно ли начать работы до подписания договора?", expect: answer, clauses: {tech: [tech-project:8.3, tech-project:8.4, tech-project:9.2]}}
+  - {id: A07, department: ib, q: "Можно ли начинать работы, если смета не согласована?", expect: answer, clauses: {ib: [ib-project:11.6, ib-project:9.1]}}
+  - {id: A08, department: dbrct, q: "Как быстро должны назначить PM на инициацию проекта?", expect: answer, clauses: {dbrct: [dbrct-project:7.2]}}
+  - {id: A09, department: tech, q: "За сколько дней назначают руководителя проекта на этапе реализации?", expect: answer, clauses: {tech: [tech-project:9.1]}}
+  - {id: A10, department: ib, q: "Кто назначает project manager на проекты ИБ и в какой срок?", expect: answer, clauses: {ib: [ib-project:2.7, ib-project:2.1]}}
+  - {id: A11, department: tech, q: "Как часто проджект должен обновлять реестр рисков?", expect: answer, clauses: {tech: [tech-project:18.2]}}
+  - {id: A12, department: ib, q: "С какой периодичностью РП обновляет реестр рисков?", expect: answer, clauses: {ib: [ib-project:23.4]}}
+  - {id: A13, department: dbrct, q: "До какого времени надо списать часы в системе управления проектами?", expect: answer, clauses: {dbrct: [dbrct-project:15.3]}}
+  - {id: A14, department: dbrct, q: "Сколько по времени длится ретро по итогам проекта?", expect: answer, clauses: {dbrct: [dbrct-project:23.1]}}
+  - {id: A15, department: dbrct, q: "Кто отвечает за опрос заказчика о качестве проекта?", expect: answer, clauses: {dbrct: [dbrct-project:21.1]}}
+  - {id: A16, department: tech, q: "Кто проводит анкетирование клиента после проекта?", expect: answer, clauses: {tech: [tech-project:22.1]}}
+  - {id: A17, department: ib, q: "Как запускается анкетирование заказчика по проекту?", expect: answer, clauses: {ib: [ib-project:30.2, ib-project:30.1]}}
+  - {id: A18, department: ib, q: "Сколько заявок максимум может висеть на одном пресейл-архитекторе?", expect: answer, clauses: {ib: [ib-presale:5.2.3]}}
+  - {id: A19, department: ib, q: "Если сейлз не дал данные по заявке, через сколько её закроют?", expect: answer, clauses: {ib: [ib-presale:3.4, ib-presale:6.9]}}
+  - {id: A20, department: ib, q: "В какой срок ПА обязан взять заявку в работу?", expect: answer, clauses: {ib: [ib-presale:5.1]}}
+  - {id: A21, department: ib, q: "Может ли SS сам отправить клиенту официальное ТКП без архитектора?", expect: answer, clauses: {ib: [ib-presale:2.3]}}
+  - {id: A22, department: ib, q: "Можно дать субподрядчику доступ к сайту проекта?", expect: answer, clauses: {ib: [ib-project:4.3]}}
+  - {id: A23, department: ib, q: "Когда можно подключать субподрядчика к работам?", expect: answer, clauses: {ib: [ib-project:14.3]}}
+  - {id: A24, department: tech, q: "С какого момента субподрядчика можно привлекать к выполнению работ?", expect: answer, clauses: {tech: [tech-project:16.4]}}
+  - {id: A25, department: tech, q: "Можно ли купить подарки клиенту за счёт бюджета проекта?", expect: answer, clauses: {tech: [tech-project:13.6]}}
+  - {id: A26, department: ib, q: "Можно оплатить командировку на маркетинговое мероприятие из бюджета проекта?", expect: answer, clauses: {ib: [ib-project:7.9.6]}}
+  - {id: A27, department: tech, q: "Можно передать оборудование третьим лицам без акта?", expect: answer, clauses: {tech: [tech-project:14.4]}}
+  - {id: A28, department: dbrct, q: "Аккаунт обещал, что договор подпишут в срок, а его не подписали. Что делать?", expect: answer, clauses: {dbrct: [dbrct-project:8.8]}}
+  - {id: A29, department: dbrct, q: "В какой срок формируют УПД после протокола ОПЭ?", expect: answer, clauses: {dbrct: [dbrct-project:20.2]}}
+  - {id: A30, department: tech, q: "Сколько потенциальных подрядчиков TPS запрашивает у департамента по работе с подрядчиками?", expect: answer, clauses: {tech: [tech-project:2.12]}}
+  - {id: A31, department: tech, q: "Кто выбирает подрядчика на пресейле?", expect: answer, clauses: {tech: [tech-project:2.11]}}
+  - {id: A32, department: ib, q: "Сколько длятся гарантийные обязательства по устранению недостатков?", expect: answer, clauses: {ib: [ib-project:24.7.6]}}
+  - {id: A33, department: ib, q: "Сколько закладывать в маржу при бюджетировании на следующий год?", expect: answer, clauses: {ib: [ib-presale:13.8]}}
+  - {id: A34, department: dbrct, q: "При каких условиях формируют команду проекта?", expect: answer, clauses: {dbrct: [dbrct-project:7.1.1]}}
+  - {id: A35, department: ib, q: "Можно отправить клиенту гарантийное письмо без согласования с РП?", expect: answer, clauses: {ib: [ib-project:29.2]}}
+  - {id: A36, department: ib, q: "Когда расчёт проекта считается устаревшим?", expect: answer, clauses: {ib: [ib-presale:8.3, ib-presale:13.13, ib-presale:8.2]}}
+  - {id: A37, department: tech, q: "Что делать TPS, если сроки проекта нереалистичные?", expect: answer, clauses: {tech: [tech-project:2.9]}}
+  - {id: A38, department: ib, q: "Сколько ждут ответа от SS по неполной карточке проекта, прежде чем её отклонят?", expect: answer, clauses: {ib: [ib-project:2.3]}}
+  - {id: A39, department: dbrct, q: "Когда обязательно проводить внутреннее установочное совещание?", expect: answer, clauses: {dbrct: [dbrct-project:11.1]}}
+  - {id: A40, department: tech, q: "Кто готовит договор с субподрядчиком?", expect: answer, clauses: {tech: [tech-project:16.1]}}
+
+  # ---------- B. Ответ зависит от подразделения, профиль пуст → уточнение ----------
+  - {id: B01, department: null, q: "Можно ли использовать бюджетную оценку для участия в конкурсе?", expect: clarify, options: [dbrct, tech], choose: dbrct, clauses: {dbrct: [dbrct-project:2.4]}}
+  - {id: B02, department: null, q: "За сколько дней нужно инициировать расчёт стоимости?", expect: clarify, options: [dbrct, tech], choose: tech, clauses: {tech: [tech-project:1.5]}}
+  - {id: B03, department: null, q: "Как часто РП обновляет реестр рисков?", expect: clarify, options: [tech, ib], choose: ib, clauses: {ib: [ib-project:23.4]}}
+  - {id: B04, department: null, q: "Кто назначает руководителя проекта и в какой срок?", expect: clarify, options: [dbrct, tech, ib], choose: dbrct, clauses: {dbrct: [dbrct-project:7.2]}}
+  - {id: B05, department: null, q: "Можно ли начать работы без договора и согласованной сметы?", expect: clarify, options: [dbrct, tech], choose: tech, clauses: {tech: [tech-project:8.3, tech-project:8.4, tech-project:13.3]}}
+  - {id: B06, department: null, q: "Кто отвечает за работу с договорами подрядчиков?", expect: clarify, options: [tech, ib], choose: ib, clauses: {ib: [ib-project:14.1]}}
+  - {id: B07, department: null, q: "Что должен делать руководитель проекта на пресейле?", expect: clarify, options: [tech], choose: tech, clauses: {tech: [tech-project:4.2, tech-project:4.3, tech-project:4]}}
+  - {id: B08, department: null, q: "Кто отвечает за анкетирование заказчика?", expect: clarify, options: [dbrct, ib], choose: ib, clauses: {ib: [ib-project:30.2, ib-project:30.1]}}
+
+  # ---------- C. Комплексный проект: требования каждого подразделения отдельно ----------
+  - {id: C01, department: null, q: "У нас комплексный проект ИБ и Техдирекции. Можно начать работы без договора?", expect: answer, clauses: {ib: [ib-project:9.1, ib-project:11.6, ib-project:9.2], tech: [tech-project:8.3, tech-project:8.4]}}
+  - {id: C02, department: null, q: "Проект ДБРЦТ и ИБ: кто и за сколько назначает РП?", expect: answer, clauses: {dbrct: [dbrct-project:7.2], ib: [ib-project:2.7, ib-project:2.1]}}
+  - {id: C03, department: null, q: "Как часто обновлять реестр рисков в комплексном проекте Техдирекции и ИБ?", expect: answer, clauses: {tech: [tech-project:18.2], ib: [ib-project:23.4]}}
+
+  # ---------- D. Ответа в регламентах нет → предложение отправить в службу качества ----------
+  - {id: D01, department: dbrct, q: "Компенсируют ли такси в командировке в выходной день?", expect: not_found}
+  - {id: D02, department: ib, q: "Можно ли перенести лицензию на другое юрлицо при реорганизации клиента?", expect: not_found}
+  - {id: D03, department: tech, q: "Какой лимит суточных в командировке?", expect: not_found}
+  - {id: D04, department: dbrct, q: "Можно ли работать на проекте удалённо из другой страны?", expect: not_found}
+  - {id: D05, department: ib, q: "Кто оплачивает сертификацию сотрудника у вендора?", expect: not_found}
+  - {id: D06, department: tech, q: "Сколько стоит час работы архитектора по внутренним ставкам?", expect: not_found}
+  - {id: D07, department: dbrct, q: "Можно ли использовать личный автомобиль для выезда к заказчику и как это компенсируется?", expect: not_found}
+  - {id: D08, department: ib, q: "Какой срок хранения проектной документации после закрытия проекта?", expect: not_found}
+
+  # ---------- E. Вне нормативной базы → к руководителю ----------
+  - {id: E01, department: dbrct, q: "Какую премию я получу за закрытую сделку?", expect: out_of_scope}
+  - {id: E02, department: ib, q: "Какая маржа будет у меня по сделке с Ростелекомом?", expect: out_of_scope}
+  - {id: E03, department: tech, q: "Когда мне повысят зарплату?", expect: out_of_scope}
+  - {id: E04, department: null, q: "Как оформить отпуск?", expect: out_of_scope}
+
+  # ---------- F. Посторонние задачи ----------
+  - {id: F01, department: null, q: "Какой сегодня курс доллара?", expect: off_task}
+  - {id: F02, department: null, q: "Сделай follow-up по вчерашней встрече с клиентом", expect: off_task}
+  - {id: F03, department: null, q: "Переведи на английский: техническое задание согласовано", expect: off_task}
+  - {id: F04, department: null, q: "Напиши письмо клиенту с извинениями за срыв сроков", expect: off_task}
+
+  # ---------- G. Ссылки на документы, которых нет в базе ----------
+  - {id: G01, department: dbrct, q: "Как искать субподрядчика, если своих ресурсов нет?", expect: answer, clauses: {dbrct: [dbrct-project:4.1, dbrct-project:9.3]}, missing: true}
+  - {id: G02, department: ib, q: "Где описан порядок работы менеджера по поставке на проекте?", expect: answer, clauses: {ib: [ib-project:5.2.2, ib-project:5.2.1]}, missing: true}
+  - {id: G03, department: ib, q: "Какие действия повторяются, если ПА запросил новый расчёт спецификаций?", expect: answer, clauses: {ib: [ib-presale:7.2]}, missing: true}
+
+  # ---------- H. Найти документ ----------
+  - {id: H01, department: null, q: "Найди регламент пресейловой деятельности дирекции ИБ", expect: document}
+  - {id: H02, department: null, q: "Где регламент по проектной деятельности ДБРЦТ? Дай ссылку на регламент", expect: document}
+
+  # ---------- I. Приветствие ----------
+  - {id: I01, department: null, q: "Привет! Что ты умеешь?", expect: greeting}

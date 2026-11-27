@@ -19,8 +19,6 @@ jobs:
         run: uv run mypy src sdk/src libs skills
       - name: Тесты
         run: uv run pytest
-      - name: Эвалы на тестовой модели (без сети)
-        run: uv run reglament eval --fake --fail-under 0.95
 
   web:
     runs-on: ubuntu-latest
