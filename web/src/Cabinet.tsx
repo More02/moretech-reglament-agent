@@ -68,6 +68,15 @@ export function Cabinet({ meta }: { meta: Meta | null }) {
     load();
   }, [load]);
 
+  // Статус меняется на экране сразу, затем данные перечитываются с сервера.
+  const changeNote = (id: number, status: string) => {
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, status } : n)));
+    api.setNote(id, status).then(load, (e: Error) => {
+      setError(e.message);
+      load();
+    });
+  };
+
   if (error)
     return (
       <section className="cabinet">
@@ -239,13 +248,13 @@ export function Cabinet({ meta }: { meta: Meta | null }) {
                     {n.status !== "published" && (
                       <button
                         className="ghost small"
-                        onClick={() => api.setNote(n.id, "published").then(load)}
+                        onClick={() => changeNote(n.id, "published")}
                       >
                         Утвердить
                       </button>
                     )}
                     {n.status !== "retired" && (
-                      <button className="ghost small" onClick={() => api.setNote(n.id, "retired").then(load)}>
+                      <button className="ghost small" onClick={() => changeNote(n.id, "retired")}>
                         Снять
                       </button>
                     )}

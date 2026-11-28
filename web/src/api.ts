@@ -3,6 +3,7 @@ import type { AgentReply, Meta, Profile } from "./types";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = localStorage.getItem("adminToken");
   const res = await fetch(path, {
+    cache: "no-store",
     ...init,
     headers: {
       "Content-Type": "application/json",
