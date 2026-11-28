@@ -16,7 +16,7 @@ DRAFT_MARKER = re.compile(r"#черновик\b", re.IGNORECASE)
 _AUTHORIZED = (SenderRole.QUALITY, SenderRole.ADDED_BY_QUALITY)
 # Начало процитированного письма: метки из цитаты (в письме агента есть подсказка про «#черновик») не учитываем.
 QUOTE_START = re.compile(
-    r"^\s*(?:-{4,}|_{4,}|>|(?:От|From|Кому|To|Тема|Subject)\s*:|.*\bпишет:\s*$|.*\bwrote:\s*$)",
+    r"-{6,}|_{6,}|^\s*>|(?:^|\s)(?:От|From|Кому|To|Тема|Subject)\s*:|\bпишет:|\bwrote:",
     re.IGNORECASE | re.MULTILINE,
 )
 

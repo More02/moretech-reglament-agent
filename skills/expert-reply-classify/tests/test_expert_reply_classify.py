@@ -52,3 +52,8 @@ def test_markers_in_quoted_agent_letter_are_ignored() -> None:
     out = run(body)
     assert out.kind is ReplyKind.FINAL_ANSWER  # type: ignore[attr-defined]
     assert "Кому" not in out.answer_text  # type: ignore[attr-defined]
+
+
+def test_quote_without_line_breaks_is_cut() -> None:
+    body = "Такси по согласованию с РП. #ответ      ----------------  Кому: q@corp.ru  «#черновик» - письмо не будет учтено."
+    assert run(body).kind is ReplyKind.FINAL_ANSWER  # type: ignore[attr-defined]
