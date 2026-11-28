@@ -27,7 +27,7 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <button className="brand" onClick={() => go("chat")} aria-label="На главную">
+        <button className="brand" onClick={() => { setProfile(null); go("chat"); }} aria-label="На главную" title="На главную">
           <img className="logo" src="/logo.svg" alt="MORE TECH" />
           <span className="brand-sub">Агент по регламентам{meta ? ` · ${meta.company}` : ""}</span>
         </button>
