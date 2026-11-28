@@ -458,9 +458,10 @@ class AnswerAgent:
     def _escalate(self, tc: TurnContext, question: str, prefix: str = "") -> AgentReply:
         pending = tc.state.get("pending") or {}
         labels = {o.label for o in self._last_options(tc)}
-        context = "; ".join(
-            t.text for t in tc.history[-6:] if t.role == "employee" and t.text != question and t.text not in labels
-        )
+        # Уточнения - только то, что сотрудник написал после самого вопроса (прежние вопросы диалога сюда не относятся).
+        employee = [t.text for t in tc.history if t.role == "employee"]
+        start = max((i for i, text in enumerate(employee) if text == question), default=len(employee) - 1) + 1
+        context = "; ".join(text for text in employee[start:] if text not in labels and text != question)
         ticket = self.mail.escalate(
             conversation_id=tc.conversation_id,
             profile=tc.profile,

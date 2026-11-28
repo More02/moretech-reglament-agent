@@ -40,3 +40,15 @@ def test_invented_answer_text_is_replaced_by_mail_body() -> None:
     )
     out = run(ANSWER, llm=llm)
     assert out.answer_text == ANSWER  # type: ignore[attr-defined]
+
+
+def test_markers_in_quoted_agent_letter_are_ignored() -> None:
+    # Ответ из Яндекс-почты: под ответом эксперта - цитата письма агента с подсказкой про «#черновик».
+    body = (
+        "Такси компенсируется по согласованию с РП. #ответ\n\n----------------\n"
+        "Кому: q@corp.ru\nТема: [РЕГ-0002] Вопрос\n"
+        "Метка «#ответ» в письме - явный финальный ответ, «#черновик» - письмо не будет учтено."
+    )
+    out = run(body)
+    assert out.kind is ReplyKind.FINAL_ANSWER  # type: ignore[attr-defined]
+    assert "Кому" not in out.answer_text  # type: ignore[attr-defined]
