@@ -93,6 +93,8 @@ class Passport(BaseModel):
     documents: list[DocumentDef]
     glossary: list[GlossaryEntry]
     out_of_scope: list[OutOfScope] = Field(default_factory=list)
+    # Леммы рабочих тем: вопрос с ними не уводится в out_of_scope, даже если модель так решила.
+    work_topic_lemmas: list[str] = Field(default_factory=list)
     off_task_examples: list[str] = Field(default_factory=list)
     demo_profiles: list[DemoProfile] = Field(default_factory=list)
 

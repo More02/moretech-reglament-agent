@@ -170,6 +170,8 @@ class AnswerAgent:
                         "Спросите, например, кто согласует расчёт трудозатрат или можно ли начать работы без договора."
                     ),
                 )
+            case Intent.OUT_OF_SCOPE if self._is_work_topic(understanding.standalone_question):
+                return self._regulation_answer(tc, understanding)
             case Intent.OUT_OF_SCOPE:
                 topic = self.passport.out_of_scope[understanding.out_of_scope_topic or 0]
                 return AgentReply(kind=ReplyKind.OUT_OF_SCOPE, text=topic.redirect)
@@ -495,6 +497,10 @@ class AnswerAgent:
         return AgentReply(
             kind=ReplyKind.DOCUMENT, text="Вот регламенты по теме вопроса:", documents=list(docs.values())
         )
+
+    def _is_work_topic(self, question: str) -> bool:
+        """Вопрос о рабочей теме из паспорта - не личный: ищем в регламентах, а не отказываем."""
+        return bool(set(lemmas(question)) & set(self.passport.work_topic_lemmas))
 
     def _greeting(self) -> AgentReply:
         deps = ", ".join(d.name for d in self.passport.departments)
